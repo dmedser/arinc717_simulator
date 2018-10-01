@@ -1,10 +1,13 @@
 #include "timer_pwm.h"
-#include <IfxScuWdt.h>
+#include <IfxScuCcu.h>
 #include <IfxScu_reg.h>
 #include <IfxGtm.h>
 #include <IfxGtm_PinMap.h>
 #include <IfxPort_Io.h>
 #include <IfxPort_PinMap.h>
+#include <stdint.h>
+
+#define ISR_PRIORITY_GTM_TOM0_12_CM		128
 
 #define BITRATE_BPS	768
 // 768   bps = 64   wps
@@ -40,5 +43,24 @@ void timer_pwm_init(void) {
 	GTM_TOM0_CH12_CN0.B.CN0 = 0;
 	GTM_TOM0_CH12_CTRL.B.CLK_SRC_SR = 0;
 
+	GTM_TOM0_TGC1_OUTEN_CTRL.B.OUTEN_CTRL4 = 0b10;
+
+	GTM_TOM0_CH12_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
+	GTM_TOM0_CH12_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
+
+	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
+	MODULE_SRC.GTM.GTM[0].TOM[0][4].B.SRPN = ISR_PRIORITY_GTM_TOM0_12_CM;
+	/* Enable service request */
+	MODULE_SRC.GTM.GTM[0].TOM[0][4].B.SRE  = 0b1;
+	_install_int_handler(ISR_PRIORITY_GTM_TOM0_12_CM, (void (*) (int))ISR_GTM_TOM0_12_CM, 0);
+
+	/* Apply the updates */
+	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;
+}
+
+uint32_t test = 0;
+
+void ISR_GTM_TOM0_12_CM(void) {
+	test++;
 }
 

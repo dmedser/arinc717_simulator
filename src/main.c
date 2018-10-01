@@ -1,6 +1,7 @@
 #include "scu_clk_cfg.h"
 #include "timer_pwm.h"
 #include <IfxCpu.h>
+#include <IfxScuWdt.h>
 #include <stdlib.h>
 
 int main(void) {
