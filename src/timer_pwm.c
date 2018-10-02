@@ -34,6 +34,7 @@ void timer_pwm_init(void) {
 	/* HBP1IN
 	 * P15.1
 	 */
+
 	IfxGtm_PinMap_setTomTout(&IfxGtm_TOM0_12_TOUT72_P15_1_OUT, IfxPort_OutputMode_pushPull, IfxPort_PadDriver_cmosAutomotiveSpeed1);
 	GTM_TOM0_TGC1_ENDIS_CTRL.B.ENDIS_CTRL4 = 0b10;
 	GTM_TOM0_TGC1_FUPD_CTRL.B.FUPD_CTRL4   = 0b10;
@@ -49,9 +50,9 @@ void timer_pwm_init(void) {
 	GTM_TOM0_CH12_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
 	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GTM.GTM[0].TOM[0][4].B.SRPN = ISR_PRIORITY_GTM_TOM0_12_CM;
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PRIORITY_GTM_TOM0_12_CM;
 	/* Enable service request */
-	MODULE_SRC.GTM.GTM[0].TOM[0][4].B.SRE  = 0b1;
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE  = 0b1;
 	_install_int_handler(ISR_PRIORITY_GTM_TOM0_12_CM, (void (*) (int))ISR_GTM_TOM0_12_CM, 0);
 
 	/* Apply the updates */
@@ -59,8 +60,16 @@ void timer_pwm_init(void) {
 }
 
 uint32_t test = 0;
+uint32_t test2 = 0;
 
 void ISR_GTM_TOM0_12_CM(void) {
-	test++;
+	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC == 0b1) {
+		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC = 0b1;
+		test++;
+	}
+	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU1TC == 0b1) {
+		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU1TC = 0b1;
+		test2++;
+	}
 }
 
