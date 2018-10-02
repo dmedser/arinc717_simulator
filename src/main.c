@@ -22,7 +22,12 @@ int main(void) {
 
 	IfxCpu_enableInterrupts();
 
-	while(1);
+	uint16_t buf[2] = {0b0000101001110101, 0b0000101011100101};
+	hbp_tx_buf(buf, 2);
+
+	while(1) {
+
+	}
 
 	return EXIT_SUCCESS;
 }
