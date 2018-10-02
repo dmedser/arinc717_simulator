@@ -1,0 +1,6 @@
+#ifndef ISR_PRIORITIES_H_
+#define ISR_PRIORITIES_H_
+
+#define ISR_PN_GTM_TOM0_12_CMP_MATCH		128
+
+#endif /* ISR_PRIORITIES_H_ */

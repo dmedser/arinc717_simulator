@@ -1,5 +1,6 @@
 #include "scu_clk_cfg.h"
-#include "timer_pwm.h"
+#include "ports.h"
+#include "pwm.h"
 #include <IfxCpu.h>
 #include <IfxScuWdt.h>
 #include <stdlib.h>
@@ -15,7 +16,9 @@ int main(void) {
 
 	scu_clk_init();
 
-	timer_pwm_init();
+	ports_init();
+
+	pwm_init();
 
 	IfxCpu_enableInterrupts();
 
