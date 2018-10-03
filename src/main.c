@@ -25,7 +25,8 @@ int main(void) {
 
 	txd.buf[0] = 0b101001110101;
 	txd.buf[1] = 0b100110101011;
-	txd.num = 2;
+	txd.buf[2] = 0b000000000000;
+	txd.num = 3;
 
 	hbp_tx();
 
