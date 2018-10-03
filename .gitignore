@@ -56,12 +56,19 @@ local.properties
 
 Drivers_Library/
 SW/
+CCP/
+DD_LIB/
+Flash_Drv/
+Circullar_Buffer/
+diagram/
+Multican_Drv/
 ld/
 models/
+iROM/
+h/Configuration.h
+h/ConfigurationIsr.h
 *.defs
 *.init
 *.targets
 *.project
-iROM/
-models/
 *.ude

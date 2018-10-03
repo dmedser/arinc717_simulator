@@ -2,9 +2,12 @@
 #include "ports.h"
 #include "pwm.h"
 #include "hbp.h"
+#include "rtos.h"
 #include <IfxCpu.h>
 #include <IfxScuWdt.h>
 #include <stdlib.h>
+#include "model.h"
+
 
 int main(void) {
 	IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
@@ -19,22 +22,25 @@ int main(void) {
 
 	ports_init();
 
+	rtos_init();
+
+	MulticanBasic_init();
+
 	pwm_init();
 
 	IfxCpu_enableInterrupts();
 
 	txd.buf[0] = 0b101001110101;
-	txd.buf[1] = 0b100110101011;
-	txd.buf[2] = 0b000000000000;
-	txd.num = 3;
-
-	hbp_tx();
-
+	txd.num = 1;
 
 	while(1) {
-
+		if(CAN_InBox_Buffer8_data[0] == 0xFF) {
+			CAN_InBox_Buffer8_data[0] = 0;
+			hbp_tx();
+			txd.num = 1;
+		}
 	}
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 
