@@ -1,6 +1,7 @@
 #include "scu_clk_cfg.h"
 #include "ports.h"
 #include "pwm.h"
+#include "hbp.h"
 #include <IfxCpu.h>
 #include <IfxScuWdt.h>
 #include <stdlib.h>
@@ -22,8 +23,12 @@ int main(void) {
 
 	IfxCpu_enableInterrupts();
 
-	uint16_t buf[2] = {0b0000101001110101, 0b0000101011100101};
-	hbp_tx_buf(buf, 2);
+	txd.buf[0] = 0b101001110101;
+	txd.buf[1] = 0b100110101011;
+	txd.num = 2;
+
+	hbp_tx();
+
 
 	while(1) {
 
