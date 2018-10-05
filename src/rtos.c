@@ -34,10 +34,10 @@ void rtos_core_timer_100_us_init(void) {
 	IfxScuWdt_setCpuEndinit(password);
 
 	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PRIORITY_GPT12_6;
+	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_GPT12_6;
 	/* Enable service request */
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRE  = 0b1;
-	_install_int_handler(ISR_PRIORITY_GPT12_6, (void (*) (int))ISR_100_us, 0);
+	_install_int_handler(ISR_PN_GPT12_6, (void (*) (int))ISR_100_us, 0);
 
 	/* Run timer */
 	MODULE_GPT120.T6CON.B.T6R = 0b1;
@@ -47,10 +47,10 @@ void rtos_core_timer_100_us_init(void) {
 void rtos_service_requests_init(void) {
 	/* SW_0 - 1 ms */
 	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRPN = ISR_PRIORITY_SW_0;
+	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRPN = ISR_PN_SW_0;
 	/* Enable service request */
 	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRE  = 0b1;
-	_install_int_handler(ISR_PRIORITY_SW_0, (void (*) (int))ISR_1_ms, 0);
+	_install_int_handler(ISR_PN_SW_0, (void (*) (int))ISR_1_ms, 0);
 }
 
 

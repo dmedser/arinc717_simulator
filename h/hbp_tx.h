@@ -1,5 +1,5 @@
-#ifndef HBP_H_
-#define HBP_H_
+#ifndef HBP_TX_H_
+#define HBP_TX_H_
 
 #include <stdint.h>
 #include <Platform_Types.h>
@@ -18,4 +18,4 @@ extern tx_buf txd;
 
 void hbp_tx(void);
 
-#endif /* HBP_H_ */
+#endif /* HBP_TX_H_ */

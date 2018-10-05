@@ -7,7 +7,5 @@ void rtos_init(void);
 
 void ISR_100_us(void);
 void ISR_1_ms(void);
-void ISR_10_ms(void);
-void ISR_100_ms(void);
 
 #endif /* RTOS_H_ */
