@@ -1,6 +1,7 @@
 #include "scu_clk_cfg.h"
 #include <IfxScuCcu.h>
 
+/* fPLL = 200 MHz */
 void scu_clk_init(void) {
 	/** \brief Default configuration for the PLL initial steps
 	 */

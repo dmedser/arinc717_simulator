@@ -1,18 +1,12 @@
 #include "edge_bit_capture.h"
+#include "gtm.h"
 #include "isr_priorities.h"
 #include <IfxGtm.h>
 #include <IfxSrc_reg.h>
 
 void edge_bit_capture_init(void) {
 
-	/* fGTM = fPLL / 2 = 100 MHz */
-
-	Ifx_GTM *gtm = &MODULE_GTM;
-	IfxGtm_enable(gtm);
-
-	/* Global divider = 1 */
-	GTM_CMU_GCLK_NUM.B.GCLK_NUM = 1;
-	GTM_CMU_GCLK_DEN.B.GCLK_DEN = 1;
+	gtm_init();
 
 	/* Edge capture timer */
 	{

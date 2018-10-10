@@ -5,12 +5,23 @@
 #include <IfxCpu.h>
 #include <IfxPort.h>
 
-rx_buf rxd = {{0}, 0, 0, FALSE};
-
 #define LSH_MAX			11
 #define WORD_IS_PASSED	(rxd.lsh == LSH_MAX)
 
-boolean bit_val_1_received = FALSE;
+static rx_buf rxd = {{0}, 0, 0, FALSE};
+static boolean bit_val_1_received = FALSE;
+
+
+void hbp_rx_init(void) {
+	edge_bit_capture_init();
+	rx_ports_init();
+}
+
+
+void hbp_rx_process(void) {
+	while(1);
+}
+
 
 void ISR_edge_capture(void) {
 

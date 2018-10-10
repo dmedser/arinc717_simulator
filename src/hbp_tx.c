@@ -1,16 +1,27 @@
 #include "hbp_tx.h"
 #include "ports.h"
 #include "pwm.h"
+#include "rtos.h"
+#include "MulticanBasic.h"
 #include <IfxGtm_reg.h>
 #include <IfxPort.h>
 #include <IfxCpu.h>
+#include "dd_ram.h"
 
 #define RSH_MAX				11
 #define WORD_IS_PASSED		(txd.rsh == RSH_MAX)
 #define IT_WAS_LAST_WORD	(txd.num == 0)
 #define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
 
-tx_buf txd = {{0}, 0, 0, 0, FALSE};
+static tx_buf txd = {{0}, 0, 0, 0, FALSE};
+
+void hbp_tx_init(void) {
+	pwm_init();
+	tx_ports_init();
+	rtos_init();
+	MulticanBasic_init();
+}
+
 
 void start_hbp_tx(void) {
 	txd.busy = TRUE;
@@ -28,6 +39,21 @@ inline void stop_hbp_tx(void) {
 void hbp_tx(void) {
 	start_hbp_tx();
 	while(txd.busy);
+}
+
+
+void hbp_tx_process(void) {
+	txd.buf[0] = 0b101001110101;
+	txd.buf[1] = 0b111000111000;
+	txd.num = 2;
+
+	while(1) {
+		if(CAN_InBox_Buffer8_data[0] == 0xFF) {
+			CAN_InBox_Buffer8_data[0] = 0;
+			hbp_tx();
+			txd.num = 2;
+		}
+	}
 }
 
 

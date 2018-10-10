@@ -1,20 +1,16 @@
 #include "pwm.h"
+#include "gtm.h"
 #include "isr_priorities.h"
 #include "ports.h"
 #include "global_cfg.h"
 #include <IfxGtm.h>
+#include <IfxScuCcu.h>
 
 #define PWM_PERIOD		BIT_TX_PERIOD
 
 void pwm_init(void) {
-	/* fGTM = fPLL / 2 = 100 MHz */
 
-	Ifx_GTM *gtm = &MODULE_GTM;
-	IfxGtm_enable(gtm);
-
-	/* Global divider = 1 */
-	GTM_CMU_GCLK_NUM.B.GCLK_NUM = 1;
-	GTM_CMU_GCLK_DEN.B.GCLK_DEN = 1;
+	gtm_init();
 
 	/* HBP_TX */
 	{
