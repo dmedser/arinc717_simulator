@@ -6,7 +6,7 @@
 #include <Platform_Types.h>
 #include <stdint.h>
 
-#define	RX_FRAME_MAX_LEN	10
+#define RX_FRAME_MAX_LEN	10
 
 typedef struct rx_buf {
 	uint16_t buf[RX_FRAME_MAX_LEN];
