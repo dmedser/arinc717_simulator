@@ -6,7 +6,7 @@
 #include <Platform_Types.h>
 #include <stdint.h>
 
-#define	TX_FRAME_MAX_LEN	1024
+#define TX_FRAME_MAX_LEN	1024
 
 typedef struct tx_buf {
 	uint16_t buf[TX_FRAME_MAX_LEN];
