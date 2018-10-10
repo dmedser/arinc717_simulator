@@ -17,7 +17,7 @@ void scu_clk_init(void) {
 	        sizeof(IfxScuCcu_testPllConfigSteps) / sizeof(IfxScuCcu_PllStepsConfig),
 	        (IfxScuCcu_PllStepsConfig *)IfxScuCcu_testPllConfigSteps,
 	        IFXSCU_CFG_PLL_INITIAL_STEP,
-		},
+	    },
 	    IFXSCU_CFG_CLK_DISTRIBUTION,
 	    IFXSCU_CFG_FLASH_WAITSTATE
 	};
