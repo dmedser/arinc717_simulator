@@ -3,13 +3,12 @@
 #ifndef HBP_RX_H_
 #define HBP_RX_H_
 
+#include "global_cfg.h"
 #include <Platform_Types.h>
 #include <stdint.h>
 
-#define	RX_FRAME_MAX_LEN	10
-
 typedef struct rx_buf {
-	uint16_t buf[RX_FRAME_MAX_LEN];
+	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
 	uint8_t  lsh;
 	boolean  busy;

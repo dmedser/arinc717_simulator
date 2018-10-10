@@ -3,13 +3,12 @@
 #ifndef HBP_TX_H_
 #define HBP_TX_H_
 
+#include "global_cfg.h"
 #include <Platform_Types.h>
 #include <stdint.h>
 
-#define	TX_FRAME_MAX_LEN	1024
-
 typedef struct tx_buf {
-	uint16_t buf[TX_FRAME_MAX_LEN];
+	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
 	uint16_t num;
 	uint8_t  rsh;
