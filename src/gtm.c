@@ -11,7 +11,6 @@
  * Target fGTM = 100 MHz */
 
 void gtm_init(void) {
-
 	Ifx_GTM *gtm = &MODULE_GTM;
 	IfxGtm_enable(gtm);
 
