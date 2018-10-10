@@ -29,7 +29,7 @@ void rtos_core_timer_100_us_init(void) {
 	MODULE_GPT120.T6CON.B.T6OTL = 0b0;   /* Overflow toggle latch initial state 0 */
 	MODULE_GPT120.T6CON.B.T6CLR = 0b0;   /* T6 is not cleared on a capture event */
 	MODULE_GPT120.T6CON.B.T6SR  = 0b1;   /* Enable reload from CAPREL */
-	MODULE_GPT120.T6.U          = 65535 - 5000; /* 100 us */
+	MODULE_GPT120.T6.U = 65535 - 5000;   /* 100 us */
 
 	MODULE_GPT120.CAPREL.U = 65535 - 5000;
 
