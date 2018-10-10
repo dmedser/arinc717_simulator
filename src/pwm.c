@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "pwm.h"
 #include "gtm.h"
 #include "isr_priorities.h"

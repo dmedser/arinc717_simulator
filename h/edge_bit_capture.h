@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef EDGE_BIT_CAPTURE_H_
 #define EDGE_BIT_CAPTURE_H_
 

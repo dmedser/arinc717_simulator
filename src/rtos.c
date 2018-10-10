@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "rtos.h"
 #include "isr_priorities.h"
 #include "model.h"

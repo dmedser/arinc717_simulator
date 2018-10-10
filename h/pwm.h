@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef PWM_H_
 #define PWM_H_
 

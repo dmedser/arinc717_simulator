@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef GTM_H_
 #define GTM_H_
 

@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef HBP_RX_H_
 #define HBP_RX_H_
 

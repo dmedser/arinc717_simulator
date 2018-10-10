@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "hbp_tx.h"
 #include "ports.h"
 #include "pwm.h"

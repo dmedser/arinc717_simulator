@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "gtm.h"
 #include "global_cfg.h"
 #include <IfxGtm.h>

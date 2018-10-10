@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef ISR_PRIORITIES_H_
 #define ISR_PRIORITIES_H_
 

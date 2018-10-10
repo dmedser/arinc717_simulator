@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef RTOS_H_
 #define RTOS_H_
 

@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "hbp_rx.h"
 #include "ports.h"
 #include "edge_bit_capture.h"

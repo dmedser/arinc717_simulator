@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #ifndef GLOBAL_CFG_H_
 #define GLOBAL_CFG_H_
 

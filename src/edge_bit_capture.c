@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "edge_bit_capture.h"
 #include "gtm.h"
 #include "isr_priorities.h"

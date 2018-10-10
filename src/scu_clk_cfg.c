@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "scu_clk_cfg.h"
 #include <IfxScuCcu.h>
 

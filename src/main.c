@@ -1,3 +1,5 @@
+/* Author: t.me/dmedser */
+
 #include "scu_clk_cfg.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
