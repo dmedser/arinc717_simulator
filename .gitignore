@@ -67,6 +67,7 @@ models/
 iROM/
 h/Configuration.h
 h/ConfigurationIsr.h
+h/Ifx_Cfg.h
 *.defs
 *.init
 *.targets
