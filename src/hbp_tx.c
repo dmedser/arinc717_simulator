@@ -16,6 +16,7 @@
 #define IT_WAS_LAST_WORD	(txd.num == 0)
 #define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
 
+/*
 #define SUBFRAME_1			0
 #define SUBFRAME_2			1
 #define SUBFRAME_3			2
@@ -36,14 +37,32 @@ void fill_txd(uint8_t subframe_idx) {
 		txd.num++;
 	}
 }
+*/
 
+static tx_buf txd = {{0}, 0, 0, 0, FALSE};
+static uint16_t increment = 0;
+
+void txd_init(){
+
+	txd.buf[0] = sws.buf[0];
+	txd.num++;
+
+	uint16_t init_val = 0;
+
+	uint16_t i = 1;
+	for(; i < FRAME_LEN; i++) {
+		txd.buf[i] = init_val++;
+		txd.num++;
+	}
+}
 
 void hbp_tx_init(void) {
 	pwm_init();
 	tx_ports_init();
 	rtos_init();
 	MulticanBasic_init();
-	fill_txd(SUBFRAME_1);
+    /*fill_txd(SUBFRAME_1);*/
+	txd_init();
 }
 
 
@@ -92,6 +111,38 @@ void ISR_GTM_TOM0_CH12_cmp_match(void) {
 	/* Period */
 	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC == 0b1) {
 		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC = 0b1;
+		if(WORD_IS_PASSED) {
+			txd.rsh = 0;
+			if(txd.idx == 0) {
+				sws.idx = (sws.idx + 1) % 4;
+				increment = sws.idx * (FRAME_LEN - 1);
+			}
+			txd.buf[txd.idx] = (txd.idx == 0) ? sws.buf[sws.idx] : increment++;
+			txd.idx = (txd.idx + 1) % FRAME_LEN;
+		}
+		else {
+			txd.rsh++;
+		}
+		TOGGLE_PIN(HBP_OUT);
+	}
+
+	IfxCpu_enableInterrupts();
+
+}
+
+void test2() {
+
+	/* Half-period */
+	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU1TC == 0b1) {
+		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU1TC = 0b1;
+		if(BIT_TO_PASS == 1) {
+			TOGGLE_PIN(HBP_OUT);
+		}
+	}
+
+	/* Period */
+	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC == 0b1) {
+		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC = 0b1;
 
 		if(WORD_IS_PASSED) {
 			txd.rsh = 0;
@@ -112,6 +163,4 @@ void ISR_GTM_TOM0_CH12_cmp_match(void) {
 		}
 	}
 
-	IfxCpu_enableInterrupts();
 }
-

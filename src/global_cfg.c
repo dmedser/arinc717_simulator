@@ -4,10 +4,5 @@
 
 uint32_t f_gtm = 0;
 
-uint16_t sync_words[NUM_OF_SUBFRAMES] = {
-	SYNC_WORD1,
-	SYNC_WORD2,
-	SYNC_WORD3,
-	SYNC_WORD4
-};
+sw_buf sws = {{SYNC_WORD1, SYNC_WORD2, SYNC_WORD3, SYNC_WORD4}, 0};
 

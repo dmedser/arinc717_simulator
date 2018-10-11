@@ -23,7 +23,12 @@
 #define SYNC_WORD3			0b101001000111
 #define SYNC_WORD4			0b110110111000
 
+typedef struct sw_buf {
+	uint16_t buf[NUM_OF_SUBFRAMES];
+	uint8_t  idx;
+} sw_buf;
+
 extern uint32_t f_gtm;
-extern uint16_t sync_words[NUM_OF_SUBFRAMES];
+extern sw_buf sws;
 
 #endif /* GLOBAL_CFG_H_ */
