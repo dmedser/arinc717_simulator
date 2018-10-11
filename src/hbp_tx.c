@@ -11,7 +11,7 @@
 #include <IfxCpu.h>
 #include "dd_ram.h"
 
-#define RSH_MAX				11
+#define RSH_MAX             11
 #define WORD_IS_PASSED		(txd.rsh == RSH_MAX)
 #define IT_WAS_LAST_WORD	(txd.num == 0)
 #define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
@@ -76,8 +76,6 @@ void hbp_tx_process(void) {
 	}
 }
 
-/* TEST */
-uint32_t TESTCNT = 0;
 
 void ISR_GTM_TOM0_CH12_cmp_match(void) {
 
@@ -94,9 +92,6 @@ void ISR_GTM_TOM0_CH12_cmp_match(void) {
 	/* Period */
 	if(GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC == 0b1) {
 		GTM_TOM0_CH12_IRQ_NOTIFY.B.CCU0TC = 0b1;
-
-		/* TEST */
-		TESTCNT++;
 
 		if(WORD_IS_PASSED) {
 			txd.rsh = 0;

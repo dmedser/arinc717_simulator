@@ -31,9 +31,6 @@ void rtos_core_timer_100_us_init(void) {
 	MODULE_GPT120.T6CON.B.T6SR  = 0b1;	  /* Enable reload from CAPREL */
 	MODULE_GPT120.T6.U = 65535 - 5000; 	  /* 100 us */
 
-	MODULE_GPT120.CAPREL.U = 65535 - 5000;
-
-	IfxScuWdt_setCpuEndinit(password);
 
 	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_GPT12_6;

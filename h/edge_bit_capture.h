@@ -5,10 +5,10 @@
 
 #include "global_cfg.h"
 
-#define FLT_ACCEPTANCE_TIME				((1 * BIT_TX_PERIOD) / 5)
-#define SECOND_HALF_OF_BIT_TX_PERIOD	((4 * BIT_TX_PERIOD) / 5)
-#define OVER_BIT_TX_PERIOD				((5 * BIT_TX_PERIOD) / 4)
-#define BIT_CAPTURE_TIMER_VALUE			GTM_TOM0_CH0_CN0.B.CN0
+#define FLT_ACCEPTANCE_TIME             ((1 * BIT_TX_PERIOD) / 5)
+#define SECOND_HALF_OF_BIT_TX_PERIOD    ((4 * BIT_TX_PERIOD) / 5)
+#define OVER_BIT_TX_PERIOD              ((5 * BIT_TX_PERIOD) / 4)
+#define BIT_CAPTURE_TIMER_VALUE         GTM_TOM0_CH0_CN0.B.CN0
 
 
 void edge_bit_capture_init(void);

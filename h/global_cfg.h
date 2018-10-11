@@ -11,11 +11,11 @@
 // 6144  bps = 512  wps
 // 12288 bps = 1024 wps
 
-#define BITRATE_BPS			768
+#define BITRATE_BPS			12288
 #define BITS_IN_WORD		12
 #define FRAME_LEN			(BITRATE_BPS / BITS_IN_WORD)
 
-#define BIT_TX_PERIOD		((uint16_t)(f_gtm / (BITRATE_BPS * 2)))
+#define BIT_TX_PERIOD		((uint16_t)(f_gtm / BITRATE_BPS))
 
 #define NUM_OF_SUBFRAMES	4
 #define SYNC_WORD1			0b001001000111

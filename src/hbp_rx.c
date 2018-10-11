@@ -56,6 +56,7 @@ void ISR_bit_capture(void) {
 
 	/* Second half of bit tx period */
 	if(GTM_TOM0_CH0_IRQ_NOTIFY.B.CCU1TC == 1) {
+		/* Flag must be cleared manually */
 		GTM_TOM0_CH0_IRQ_NOTIFY.B.CCU1TC = 0b1;
 
 		if(bit_val_1_received) {
@@ -74,6 +75,7 @@ void ISR_bit_capture(void) {
 
 	/* Over bit tx period */
 	else if(GTM_TOM0_CH0_IRQ_NOTIFY.B.CCU0TC == 1) {
+		/* Flag must be cleared manually */
 		GTM_TOM0_CH0_IRQ_NOTIFY.B.CCU0TC = 0b1;
 
 		bit_capture_timer_off();

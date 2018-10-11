@@ -5,19 +5,25 @@
 #include <IfxGtm.h>
 #include <IfxScuCcu.h>
 
-/* fGTM = fPLL / GTMDIV / (GCLK_NUM / GCLK_DEN)
+/* fGTM  = fPLL / GTMDIV
  * fPLL = 200 MHz
- * By default GTMDIV = 2
- * Target fGTM = 100 MHz */
+ * Target fGTM = 50 MHz */
 
 void gtm_init(void) {
-
 	Ifx_GTM *gtm = &MODULE_GTM;
 	IfxGtm_enable(gtm);
 
-	/* Global divider = 1 */
-	GTM_CMU_GCLK_NUM.B.GCLK_NUM = 1;
-	GTM_CMU_GCLK_DEN.B.GCLK_DEN = 1;
+	Ifx_SCU_CCUCON1 ccucon1 = SCU_CCUCON1;
+	uint16_t password = IfxScuWdt_getSafetyWatchdogPassword();
+
+	/* Disable TRAP for SMU (oscillator watchdog and unlock detection) */
+	IfxScuWdt_clearSafetyEndinit(password);
+
+	ccucon1.B.GTMDIV = 4U;
+	ccucon1.B.UP     = 1U;
+	SCU_CCUCON1.U    = ccucon1.U;
+
+	IfxScuWdt_setSafetyEndinit(password);
 
 	f_gtm = IfxScuCcu_getGtmFrequency();
 }
