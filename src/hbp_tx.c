@@ -35,6 +35,9 @@ void txd_init(){
 	for(; i < FRAME_LEN; i++) {
 		txd.buf[i] = init_val++;
 	}
+
+	txd.idx = 0;
+	txd.rsh = 0;
 }
 
 void hbp_tx_init(void) {
@@ -68,6 +71,9 @@ void hbp_tx_process(void) {
 		case STOP:
 			RECEIVED_OPCODE = ND;
 			stop_hbp_tx();
+			txd_init();
+			increment = 0;
+			sws.idx = 0;
 			break;
 		}
 	}
