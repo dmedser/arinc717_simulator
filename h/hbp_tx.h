@@ -10,9 +10,7 @@
 typedef struct tx_buf {
 	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
-	uint16_t num;
 	uint8_t  rsh;
-	boolean  busy;
 } tx_buf;
 
 void hbp_tx_init(void);
