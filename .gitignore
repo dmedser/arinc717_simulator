@@ -54,6 +54,7 @@ local.properties
 .scala_dependencies
 .worksheet
 
+some_shit/
 Drivers_Library/
 SW/
 CCP/
@@ -65,9 +66,6 @@ Multican_Drv/
 ld/
 models/
 iROM/
-h/Configuration.h
-h/ConfigurationIsr.h
-h/Ifx_Cfg.h
 *.defs
 *.init
 *.targets

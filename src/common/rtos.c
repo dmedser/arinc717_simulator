@@ -1,20 +1,29 @@
 /* Author: t.me/dmedser */
 
 #include "rtos.h"
+#include "global_cfg.h"
 #include "isr_priorities.h"
-#include "model.h"
+#include "_Time_Machine_1ms_Level.h"
 #include <IfxCpu.h>
 #include <IfxGpt12.h>
 #include <IfxSrc.h>
 
 uint32_t cntr_100_us = 0;
+uint32_t cntr_1_ms = 0;
+
+#if 	(OP_MODE == TRANSMITTER)
+#define ISR_1_ms    ISR_1_ms_tx
+#else
+#define ISR_1_ms    ISR_1_ms_rx
+#endif
 
 void rtos_core_timer_100_us_init(void) {
 	IfxCpu_disableInterrupts();
+
 	uint16_t password = IfxScuWdt_getCpuWatchdogPassword();
-	IfxScuWdt_clearCpuEndinit(password);
 
 	/* Enable control of the module */
+	IfxScuWdt_clearCpuEndinit(password);
 	MODULE_GPT120.CLC.B.DISR = 0b0;
 
 	/* GPT2 */
@@ -31,6 +40,9 @@ void rtos_core_timer_100_us_init(void) {
 	MODULE_GPT120.T6CON.B.T6SR  = 0b1;	  /* Enable reload from CAPREL */
 	MODULE_GPT120.T6.U = 65535 - 5000; 	  /* 100 us */
 
+	MODULE_GPT120.CAPREL.U = 65535 - 5000;
+
+	IfxScuWdt_setCpuEndinit(password);
 
 	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_GPT12_6;
@@ -61,19 +73,33 @@ void rtos_init(void) {
 
 void ISR_100_us(void){
 	IfxCpu_forceDisableInterrupts();
+
 	cntr_100_us++;
+
 	/* Call 1 ms level - service request 0 */
 	if(cntr_100_us == 10) {
 		cntr_100_us = 0;
 		MODULE_SRC.GPSR.GPSR[0].SR0.B.SETR = 0b1;
 	}
+
 	IfxCpu_enableInterrupts();
 }
 
 
-void ISR_1_ms(void) {
+void ISR_1_ms_tx(void) {
 	IfxCpu_forceDisableInterrupts();
+
 	_Time_Machine_1ms_Level();
+
+	IfxCpu_enableInterrupts();
+}
+
+
+void ISR_1_ms_rx(void) {
+	IfxCpu_forceDisableInterrupts();
+
+	cntr_1_ms++;
+
 	IfxCpu_enableInterrupts();
 }
 

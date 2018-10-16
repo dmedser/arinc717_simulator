@@ -1,11 +1,13 @@
 /* Author: t.me/dmedser */
 
 #include "ports.h"
+#include "global_cfg.h"
 #include <IfxPort_Io.h>
 #include <IfxPort_PinMap.h>
 #include <IfxGtm_PinMap.h>
 
-void tx_ports_init(void) {
+void ports_init(void) {
+	#if(OP_MODE	== TRANSMITTER)
 	/* HBP_TX  */
 	{
 		const IfxPort_Io_ConfigPin HBP_OUT_cfg_pin[1] = {{&IfxPort_P15_0, IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1}};
@@ -16,11 +18,11 @@ void tx_ports_init(void) {
 		IfxPort_Io_initModule(&HBP_OUT_cfg);
 		SET_PIN_LOW(HBP_OUT);
 	}
-}
-
-void rx_ports_init(void) {
+	#else
 	/* HBP_RX */
 	{
 		IfxGtm_PinMap_setTimTin(&IfxGtm_TIM0_0_TIN32_P33_10_IN, IfxPort_InputMode_noPullDevice);
 	}
+	#endif
 }
+

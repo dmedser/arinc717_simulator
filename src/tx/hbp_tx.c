@@ -42,8 +42,6 @@ void txd_init(){
 
 void hbp_tx_init(void) {
 	pwm_init();
-	tx_ports_init();
-	rtos_init();
 	MulticanBasic_init();
 	txd_init();
 }

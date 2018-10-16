@@ -3,6 +3,11 @@
 #ifndef GLOBAL_CFG_H_
 #define GLOBAL_CFG_H_
 
+#define TRANSMITTER		0
+#define RECIEVER		1
+
+#define OP_MODE			RECIEVER
+
 #include <stdint.h>
 
 // 768   bps = 64   wps

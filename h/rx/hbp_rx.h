@@ -11,7 +11,6 @@ typedef struct rx_buf {
 	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
 	uint8_t  lsh;
-	boolean  busy;
 } rx_buf;
 
 void hbp_rx_init(void);

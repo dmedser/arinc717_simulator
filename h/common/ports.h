@@ -9,8 +9,8 @@
 
 #define HBP_OUT           &MODULE_P15, 0
 #define HBP_IN            &MODULE_P33, 10
+#define TEST_OUT		  &MODULE_P33, 7
 
-void tx_ports_init(void);
-void rx_ports_init(void);
+void ports_init(void);
 
 #endif /* PORTS_H_ */
