@@ -2,6 +2,7 @@
 
 #include "scu_clk_cfg.h"
 #include "rtos.h"
+#include "gtm.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
 #include "ports.h"
@@ -21,6 +22,8 @@ int main(void) {
 	scu_clk_init();
 
 	rtos_init();
+
+	gtm_init();
 
 	#if(OP_MODE == TRANSMITTER)
 	hbp_tx_init();

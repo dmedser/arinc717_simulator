@@ -4,7 +4,6 @@
 #include "global_cfg.h"
 #include "ports.h"
 #include "pwm.h"
-#include "rtos.h"
 #include "MulticanBasic.h"
 #include <IfxGtm_reg.h>
 #include <IfxPort.h>
@@ -26,7 +25,6 @@ static tx_buf txd = {{0}, 0, 0};
 static uint16_t increment = 0;
 
 void txd_init(){
-
 	txd.buf[0] = sws.buf[0];
 
 	uint16_t init_val = 0;
@@ -79,7 +77,6 @@ void hbp_tx_process(void) {
 
 
 void ISR_GTM_TOM0_CH12_cmp_match(void) {
-
 	IfxCpu_forceDisableInterrupts();
 
 	/* Half-period */
@@ -109,5 +106,4 @@ void ISR_GTM_TOM0_CH12_cmp_match(void) {
 	}
 
 	IfxCpu_enableInterrupts();
-
 }
