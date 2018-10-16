@@ -12,7 +12,6 @@
 #define ISR_PN_GTM_TOM0_CH0     129
 #define ISR_PN_GPT12_6          250
 #define ISR_PN_SW_0             249
-#define ISR_PN_SW_1				248
 
 
 #endif /* ISR_PRIORITIES_H_ */

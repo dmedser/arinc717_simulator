@@ -5,11 +5,11 @@
 #include "isr_priorities.h"
 #include "_Time_Machine_1ms_Level.h"
 #include <IfxCpu.h>
-#include <IfxGpt12.h>
-#include <IfxSrc.h>
+#include <IfxGpt12_reg.h>
+#include <IfxSrc_reg.h>
 
-uint32_t cntr_100_us = 0;
-uint32_t cntr_1_ms = 0;
+uint32_t cnt_100_us = 0;
+uint32_t cnt_1_ms = 0;
 
 #if 	(OP_MODE == TRANSMITTER)
 #define ISR_1_ms    ISR_1_ms_tx
@@ -74,11 +74,11 @@ void rtos_init(void) {
 void ISR_100_us(void){
 	IfxCpu_forceDisableInterrupts();
 
-	cntr_100_us++;
+	cnt_100_us++;
 
 	/* Call 1 ms level - service request 0 */
-	if(cntr_100_us == 10) {
-		cntr_100_us = 0;
+	if(cnt_100_us == 10) {
+		cnt_100_us = 0;
 		MODULE_SRC.GPSR.GPSR[0].SR0.B.SETR = 0b1;
 	}
 
@@ -98,7 +98,7 @@ void ISR_1_ms_tx(void) {
 void ISR_1_ms_rx(void) {
 	IfxCpu_forceDisableInterrupts();
 
-	cntr_1_ms++;
+	cnt_1_ms++;
 
 	IfxCpu_enableInterrupts();
 }
