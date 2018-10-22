@@ -20,7 +20,7 @@
 #define STOP				0x01
 #define ND					0x00
 
-static tx_buf txd = {{0}, 0, 0};
+static txd_t txd = {{0}, 0, 0};
 
 static uint16_t increment = 0;
 

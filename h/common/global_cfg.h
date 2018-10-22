@@ -25,17 +25,17 @@
 #define OVER_BIT_TX_PERIOD				((5 * BIT_TX_PERIOD) / 4)
 
 #define NUM_OF_SUBFRAMES				4
-#define SYNC_WORD1						0b001001000111
-#define SYNC_WORD2						0b010110111000
-#define SYNC_WORD3						0b101001000111
-#define SYNC_WORD4						0b110110111000
+#define SW1								0b001001000111
+#define SW2								0b010110111000
+#define SW3								0b101001000111
+#define SW4								0b110110111000
 
-typedef struct sw_buf {
+typedef struct buf_u16_t {
 	uint16_t buf[NUM_OF_SUBFRAMES];
 	uint8_t  idx;
-} sw_buf;
+} buf_u16_t;
 
 extern uint32_t f_gtm;
-extern sw_buf sws;
+extern buf_u16_t sws;
 
 #endif /* GLOBAL_CFG_H_ */

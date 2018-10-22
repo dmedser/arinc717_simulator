@@ -1,70 +1,50 @@
 /* Author: t.me/dmedser */
 
 #include "sync.h"
-#include <Platform_types.h>
+#include "global_cfg.h"
 
-/* The synchronization process is as follows:
- * appearances of sync words are stored in
- * the buffer of stamps; in each state of
- * sync_process() pairs of adjacent sync
- * words (i.e. sync words with stamps, the
- * difference of which is equal SW_PERIOD)
- * are searched. On success, next adjacent
- * sync words are searched in the same way.
- */
+#define SW1_REVERSED		0xE2400000
+#define SW2_REVERSED		0x1DA00000
+#define SW3_REVERSED		0xE2500000
+#define SW4_REVERSED		0x1DB00000
 
-#define SW1_ENCODED			0xFC660000
-#define SW2_ENCODED			0x1FBD8000
-#define SW3_ENCODED			0xFC66C000
-#define SW4_ENCODED			0x1FBDE000
+#define SW_MASK				0xFFF00000
 
-#define SW1_ENCODE_MSK		0xFFFF8000
-#define SW2_ENCODE_MSK		0xFFFFC000
-#define SW3_ENCODE_MSK		0xFFFFC000
-#define SW4_ENCODE_MSK		0xFFFFE000
-
-#define SW1_CAPTURED		((encoded_bit_stream & SW1_ENCODE_MSK) == SW1_ENCODED)
-#define SW2_CAPTURED		((encoded_bit_stream & SW2_ENCODE_MSK) == SW2_ENCODED)
-#define SW3_CAPTURED		((encoded_bit_stream & SW3_ENCODE_MSK) == SW3_ENCODED)
-#define SW4_CAPTURED		((encoded_bit_stream & SW4_ENCODE_MSK) == SW4_ENCODED)
-
-/* Values in ms */
-#define SW_PERIOD			1000
-#define DEVIATION			1
-#define LOWER_BOUND			(SW_PERIOD - DEVIATION)
-#define UPPER_BOUND			(SW_PERIOD + DEVIATION)
+#define SW1_CAPTURED		((bit_stream & SW_MASK) == SW1_REVERSED)
+#define SW2_CAPTURED		((bit_stream & SW_MASK) == SW2_REVERSED)
+#define SW3_CAPTURED		((bit_stream & SW_MASK) == SW3_REVERSED)
+#define SW4_CAPTURED		((bit_stream & SW_MASK) == SW4_REVERSED)
 
 #define SUCCESS				TRUE
 #define FAIL				FALSE
 
-extern uint32_t cnt_1_ms;
-extern uint32_t encoded_bit_stream;
+extern uint32_t bit_stream;
+extern uint32_t bit_counter;
 
 static sync_states sync_state = IDLE;
-static buf_t stamps = {{0}, 0};
+static buf_u32_t sw_stamps = {{0}, 0};
 
-boolean find_period(void) {
-	uint16_t i = 0;
-
-	for(; i < stamps.idx; i++) {
-
-		uint32_t diff = cnt_1_ms - stamps.buf[i];
-
-		if((LOWER_BOUND <= diff) && (diff <= UPPER_BOUND)) {
-			return SUCCESS;
-		}
-	}
-	return FAIL;
+inline void clear_stamps(void) {
+	sw_stamps.idx = 0;
 }
 
 
 inline void make_stamp(void) {
-	stamps.buf[stamps.idx++] = cnt_1_ms;
+	sw_stamps.buf[sw_stamps.idx++] = bit_counter;
 }
 
 
-inline void clear_stamps(void) {
-	stamps.idx = 0;
+boolean find_adjacent_sws(void) {
+	uint16_t i = 0;
+
+	for(; i < sw_stamps.idx; i++) {
+
+		if((bit_counter - sw_stamps.buf[i]) == BITRATE_BPS) {
+			return SUCCESS;
+		}
+
+	}
+	return FAIL;
 }
 
 
@@ -93,7 +73,7 @@ void sync_process(void) {
 			make_stamp();
 		}
 		else if(SW2_CAPTURED) {
-			if(find_period() == SUCCESS) {
+			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				make_stamp();
 				sync_state = SW23;
@@ -105,7 +85,7 @@ void sync_process(void) {
 			make_stamp();
 		}
 		else if(SW3_CAPTURED) {
-			if(find_period() == SUCCESS) {
+			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				make_stamp();
 				sync_state = SW34;
@@ -117,7 +97,7 @@ void sync_process(void) {
 			make_stamp();
 		}
 		else if(SW4_CAPTURED) {
-			if(find_period() == SUCCESS) {
+			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				make_stamp();
 				sync_state = SW41;
@@ -129,7 +109,7 @@ void sync_process(void) {
 			make_stamp();
 		}
 		else if(SW1_CAPTURED) {
-			if(find_period() == SUCCESS) {
+			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				make_stamp();
 				sync_state = SW12;

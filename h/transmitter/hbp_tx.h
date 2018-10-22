@@ -7,11 +7,11 @@
 #include <Platform_Types.h>
 #include <stdint.h>
 
-typedef struct tx_buf {
+typedef struct txd_t {
 	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
 	uint8_t  rsh;
-} tx_buf;
+} txd_t;
 
 void hbp_tx_init(void);
 void hbp_tx_process(void);

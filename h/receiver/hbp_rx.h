@@ -7,11 +7,11 @@
 #include <Platform_Types.h>
 #include <stdint.h>
 
-typedef struct rx_buf {
+typedef struct rxd_t {
 	uint16_t buf[FRAME_LEN];
 	uint16_t idx;
 	uint8_t  lsh;
-} rx_buf;
+} rxd_t;
 
 void hbp_rx_init(void);
 void hbp_rx_process(void);

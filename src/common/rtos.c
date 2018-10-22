@@ -3,6 +3,7 @@
 #include "rtos.h"
 #include "global_cfg.h"
 #include "isr_priorities.h"
+#include "sync.h"
 #include "_Time_Machine_1ms_Level.h"
 #include <IfxCpu.h>
 #include <IfxGpt12_reg.h>
@@ -11,10 +12,10 @@
 uint32_t cnt_100_us = 0;
 uint32_t cnt_1_ms = 0;
 
-#if 	(OP_MODE == TRANSMITTER)
-#define ISR_1_ms    ISR_1_ms_tx
+#if (OP_MODE == TRANSMITTER)
+	#define ISR_1_ms    ISR_1_ms_tx
 #else
-#define ISR_1_ms    ISR_1_ms_rx
+	#define ISR_1_ms	ISR_1_ms_rx
 #endif
 
 void rtos_core_timer_100_us_init(void) {

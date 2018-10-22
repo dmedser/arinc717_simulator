@@ -4,5 +4,5 @@
 
 uint32_t f_gtm = 0;
 
-sw_buf sws = {{SYNC_WORD1, SYNC_WORD2, SYNC_WORD3, SYNC_WORD4}, 0};
+buf_u16_t sws = {{SW1, SW2, SW3, SW4}, 0};
 

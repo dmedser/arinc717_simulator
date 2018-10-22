@@ -4,8 +4,9 @@
 #define SYNC_H_
 
 #include <stdint.h>
+#include <Platform_Types.h>
 
-#define BUF_SIZE		100
+#define STAMPS_BUF_SIZE		100
 
 typedef enum sync_states {
 	IDLE,
@@ -15,10 +16,10 @@ typedef enum sync_states {
 	SW41
 } sync_states;
 
-typedef struct buf_t {
-	uint32_t buf[BUF_SIZE];
+typedef struct buf_u32_t {
+	uint32_t buf[STAMPS_BUF_SIZE];
 	uint16_t idx;
-} buf_t;
+} buf_u32_t;
 
 void sync_process(void);
 
