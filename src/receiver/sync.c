@@ -1,6 +1,7 @@
 /* Author: t.me/dmedser */
 
 #include "sync.h"
+#include "hbp_rx.h"
 #include "global_cfg.h"
 
 #define SW1_REVERSED		0xE2400000
@@ -15,22 +16,27 @@
 #define SW3_CAPTURED		((bit_stream & SW_MASK) == SW3_REVERSED)
 #define SW4_CAPTURED		((bit_stream & SW_MASK) == SW4_REVERSED)
 
+#define ADJACENT_SWS_LOST	((bit_counter - last_adjacent_sws_stamp) > BITRATE_BPS)
+
 #define SUCCESS				TRUE
 #define FAIL				FALSE
 
-extern uint32_t bit_stream;
-extern uint32_t bit_counter;
+static sws_tracking_states sws_tracking_state = IDLE;
 
-static sync_states sync_state = IDLE;
 static buf_u32_t sw_stamps = {{0}, 0};
+
+static uint32_t last_adjacent_sws_stamp = 0;
+
+uint8_t sync_flags = 0;
 
 inline void clear_stamps(void) {
 	sw_stamps.idx = 0;
 }
 
 
-inline void make_stamp(void) {
+uint32_t make_stamp(void) {
 	sw_stamps.buf[sw_stamps.idx++] = bit_counter;
+	return bit_counter;
 }
 
 
@@ -48,24 +54,24 @@ boolean find_adjacent_sws(void) {
 }
 
 
-void sync_process(void) {
-	switch(sync_state) {
+void sws_tracking(void) {
+	switch(sws_tracking_state) {
 	case IDLE:
 		if(SW1_CAPTURED) {
 			make_stamp();
-			sync_state = SW12;
+			sws_tracking_state = SW12;
 		}
 		else if(SW2_CAPTURED) {
 			make_stamp();
-			sync_state = SW23;
+			sws_tracking_state = SW23;
 		}
 		else if(SW3_CAPTURED) {
 			make_stamp();
-			sync_state = SW34;
+			sws_tracking_state = SW34;
 		}
 		else if(SW4_CAPTURED) {
 			make_stamp();
-			sync_state = SW41;
+			sws_tracking_state = SW41;
 		}
 		break;
 	case SW12:
@@ -75,8 +81,9 @@ void sync_process(void) {
 		else if(SW2_CAPTURED) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
-				make_stamp();
-				sync_state = SW23;
+				last_adjacent_sws_stamp = make_stamp();
+				SET_SYNC_FLAG(ADJACENT_SW12_CAPTURED_FLAG);
+				sws_tracking_state = SW23;
 			}
 		}
 		break;
@@ -87,8 +94,9 @@ void sync_process(void) {
 		else if(SW3_CAPTURED) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
-				make_stamp();
-				sync_state = SW34;
+				last_adjacent_sws_stamp = make_stamp();
+				SET_SYNC_FLAG(ADJACENT_SW23_CAPTURED_FLAG);
+				sws_tracking_state = SW34;
 			}
 		}
 		break;
@@ -99,8 +107,9 @@ void sync_process(void) {
 		else if(SW4_CAPTURED) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
-				make_stamp();
-				sync_state = SW41;
+				last_adjacent_sws_stamp = make_stamp();
+				SET_SYNC_FLAG(ADJACENT_SW34_CAPTURED_FLAG);
+				sws_tracking_state = SW41;
 			}
 		}
 		break;
@@ -111,11 +120,16 @@ void sync_process(void) {
 		else if(SW1_CAPTURED) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
-				make_stamp();
-				sync_state = SW12;
+				last_adjacent_sws_stamp = make_stamp();
+				SET_SYNC_FLAG(ADJACENT_SW41_CAPTURED_FLAG);
+				sws_tracking_state = SW12;
 			}
 		}
 		break;
+	}
+
+	if(ADJACENT_SWS_LOST) {
+		CLEAR_SYNC_FLAGS(SUCCESS_FLAGS);
 	}
 }
 

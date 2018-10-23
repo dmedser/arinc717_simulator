@@ -6,11 +6,10 @@
 #include <stdint.h>
 
 void bit_capture_init(void);
-inline void bit_capture_timer_on(void);
-inline void bit_capture_timer_off_reset(void);
-uint32_t bit_capture_timer_value(void);
-
-//inline void update_encoded_bit_stream(void);
+inline void btc_on(void);
+inline void btc_off(void);
+inline void btc_reset(void);
+uint32_t btc_value(void);
 
 void ISR_bit_capture(void);
 
