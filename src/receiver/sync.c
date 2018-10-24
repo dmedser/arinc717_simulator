@@ -2,7 +2,7 @@
 
 #include "sync.h"
 #include "hbp_rx.h"
-#include "global_cfg.h"
+#include <Platform_Types.h>
 
 #define SW1_REVERSED		0xE2400000
 #define SW2_REVERSED		0x1DA00000
@@ -21,12 +21,9 @@
 #define SUCCESS				TRUE
 #define FAIL				FALSE
 
-static sws_tracking_states sws_tracking_state = IDLE;
-
+static sw_tracking_states sw_tracking_state = IDLE;
 static buf_u32_t sw_stamps = {{0}, 0};
-
 static uint32_t last_adjacent_sws_stamp = 0;
-
 uint8_t sync_flags = 0;
 
 inline void clear_stamps(void) {
@@ -54,24 +51,24 @@ boolean find_adjacent_sws(void) {
 }
 
 
-void sws_tracking(void) {
-	switch(sws_tracking_state) {
+void sw_tracking(void) {
+	switch(sw_tracking_state) {
 	case IDLE:
 		if(SW1_CAPTURED) {
 			make_stamp();
-			sws_tracking_state = SW12;
+			sw_tracking_state = SW12;
 		}
 		else if(SW2_CAPTURED) {
 			make_stamp();
-			sws_tracking_state = SW23;
+			sw_tracking_state = SW23;
 		}
 		else if(SW3_CAPTURED) {
 			make_stamp();
-			sws_tracking_state = SW34;
+			sw_tracking_state = SW34;
 		}
 		else if(SW4_CAPTURED) {
 			make_stamp();
-			sws_tracking_state = SW41;
+			sw_tracking_state = SW41;
 		}
 		break;
 	case SW12:
@@ -83,7 +80,7 @@ void sws_tracking(void) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
 				SET_SYNC_FLAG(ADJACENT_SW12_CAPTURED_FLAG);
-				sws_tracking_state = SW23;
+				sw_tracking_state = SW23;
 			}
 		}
 		break;
@@ -96,7 +93,7 @@ void sws_tracking(void) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
 				SET_SYNC_FLAG(ADJACENT_SW23_CAPTURED_FLAG);
-				sws_tracking_state = SW34;
+				sw_tracking_state = SW34;
 			}
 		}
 		break;
@@ -109,7 +106,7 @@ void sws_tracking(void) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
 				SET_SYNC_FLAG(ADJACENT_SW34_CAPTURED_FLAG);
-				sws_tracking_state = SW41;
+				sw_tracking_state = SW41;
 			}
 		}
 		break;
@@ -122,14 +119,15 @@ void sws_tracking(void) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
 				SET_SYNC_FLAG(ADJACENT_SW41_CAPTURED_FLAG);
-				sws_tracking_state = SW12;
+				sw_tracking_state = SW12;
 			}
 		}
 		break;
 	}
 
+	/* Sync error by lost of adjacent sync words */
 	if(ADJACENT_SWS_LOST) {
-		CLEAR_SYNC_FLAGS(SUCCESS_FLAGS);
+		CLEAR_SYNC_FLAGS();
 	}
 }
 

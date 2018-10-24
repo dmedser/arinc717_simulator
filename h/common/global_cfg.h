@@ -6,7 +6,7 @@
 #define TRANSMITTER						0
 #define RECEIVER						1
 
-#define OP_MODE							RECEIVER
+#define OP_MODE							0
 
 #include <stdint.h>
 

@@ -26,7 +26,7 @@ void pwm_init(void) {
 	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_GTM_TOM0_CH12;
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GTM_TOM0_CH12, (void (*) (int))ISR_GTM_TOM0_CH12_cmp_match, 0);
+	_install_int_handler(ISR_PN_GTM_TOM0_CH12, (void (*) (int))ISR_bit_tx, 0);
 
 	/* Apply the updates */
 	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;

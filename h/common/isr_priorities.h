@@ -10,6 +10,7 @@
 #define ISR_PN_GTM_TOM0_CH12    128
 #define ISR_PN_GTM_TIM0_CH0     128
 #define ISR_PN_GTM_TOM0_CH0     129
+#define ISR_PN_GTM_TOM0_CH1		130
 #define ISR_PN_GPT12_6          250
 #define ISR_PN_SW_0             249
 
