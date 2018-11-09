@@ -2,29 +2,51 @@
 
 #include "sync.h"
 #include "hbp_rx.h"
+#include "global_cfg.h"
 #include <Platform_Types.h>
 
-#define SW1_REVERSED		0xE2400000
-#define SW2_REVERSED		0x1DA00000
-#define SW3_REVERSED		0xE2500000
-#define SW4_REVERSED		0x1DB00000
+#define SW1_REVERSED				0xE2400000
+#define SW2_REVERSED				0x1DA00000
+#define SW3_REVERSED				0xE2500000
+#define SW4_REVERSED				0x1DB00000
 
-#define SW_MASK				0xFFF00000
+#define SW_MASK						0xFFF00000
 
-#define SW1_CAPTURED		((bit_stream & SW_MASK) == SW1_REVERSED)
-#define SW2_CAPTURED		((bit_stream & SW_MASK) == SW2_REVERSED)
-#define SW3_CAPTURED		((bit_stream & SW_MASK) == SW3_REVERSED)
-#define SW4_CAPTURED		((bit_stream & SW_MASK) == SW4_REVERSED)
+#define SW1_CAPTURED				((bit_stream & SW_MASK) == SW1_REVERSED)
+#define SW2_CAPTURED				((bit_stream & SW_MASK) == SW2_REVERSED)
+#define SW3_CAPTURED				((bit_stream & SW_MASK) == SW3_REVERSED)
+#define SW4_CAPTURED				((bit_stream & SW_MASK) == SW4_REVERSED)
 
-#define ADJACENT_SWS_LOST	((bit_counter - last_adjacent_sws_stamp) > BITRATE_BPS)
+#define ADJACENT_SWS_LOST			((bit_counter - last_adjacent_sws_stamp) > BITRATE_BPS)
 
-#define SUCCESS				TRUE
-#define FAIL				FALSE
+#define ADJACENT_SW12_CAPTURED		0
+#define ADJACENT_SW23_CAPTURED		1
+#define ADJACENT_SW34_CAPTURED		2
+#define ADJACENT_SW41_CAPTURED		3
 
-static sw_tracking_states sw_tracking_state = IDLE;
+#define SUCCESS						TRUE
+#define FAIL						FALSE
+
+#define STAMPS_NUMBER				100
+#define BUF_U32_SIZE				STAMPS_NUMBER
+
+typedef struct buf_u32_t {
+	uint32_t buf[BUF_U32_SIZE];
+	uint16_t idx;
+} buf_u32_t;
+
+typedef enum sw_tracking_state_t {
+	IDLE,
+	SW12,
+	SW23,
+	SW34,
+	SW41
+} sw_tracking_state_t;
+
+static sw_tracking_state_t sw_tracking_state = IDLE;
 static buf_u32_t sw_stamps = {{0}, 0};
 static uint32_t last_adjacent_sws_stamp = 0;
-uint8_t sync_flags = 0;
+static sync_flags_t sync_flags = 0;
 
 inline void clear_stamps(void) {
 	sw_stamps.idx = 0;
@@ -51,7 +73,17 @@ boolean find_adjacent_sws(void) {
 }
 
 
-void sw_tracking(void) {
+inline void set_sync_flag(uint8_t sf_pos) {
+	sync_flags |= (1 << sf_pos);
+}
+
+
+inline void clear_sync_flags(void) {
+	sync_flags &= ~SYNC_FLAGS_MASK;
+}
+
+
+sync_flags_t sw_tracking(void) {
 	switch(sw_tracking_state) {
 	case IDLE:
 		if(SW1_CAPTURED) {
@@ -79,7 +111,7 @@ void sw_tracking(void) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
-				SET_SYNC_FLAG(ADJACENT_SW12_CAPTURED_FLAG);
+				set_sync_flag(ADJACENT_SW12_CAPTURED);
 				sw_tracking_state = SW23;
 			}
 		}
@@ -92,7 +124,7 @@ void sw_tracking(void) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
-				SET_SYNC_FLAG(ADJACENT_SW23_CAPTURED_FLAG);
+				set_sync_flag(ADJACENT_SW23_CAPTURED);
 				sw_tracking_state = SW34;
 			}
 		}
@@ -105,7 +137,7 @@ void sw_tracking(void) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
-				SET_SYNC_FLAG(ADJACENT_SW34_CAPTURED_FLAG);
+				set_sync_flag(ADJACENT_SW34_CAPTURED);
 				sw_tracking_state = SW41;
 			}
 		}
@@ -118,7 +150,7 @@ void sw_tracking(void) {
 			if(find_adjacent_sws() == SUCCESS) {
 				clear_stamps();
 				last_adjacent_sws_stamp = make_stamp();
-				SET_SYNC_FLAG(ADJACENT_SW41_CAPTURED_FLAG);
+				set_sync_flag(ADJACENT_SW41_CAPTURED);
 				sw_tracking_state = SW12;
 			}
 		}
@@ -127,7 +159,9 @@ void sw_tracking(void) {
 
 	/* Sync error by lost of adjacent sync words */
 	if(ADJACENT_SWS_LOST) {
-		CLEAR_SYNC_FLAGS();
+		clear_sync_flags();
 	}
+
+	return sync_flags;
 }
 

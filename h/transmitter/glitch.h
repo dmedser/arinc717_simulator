@@ -5,7 +5,6 @@
 
 void gg_update(void);
 void glitch_generator_init(void);
-void gg_update(void);
 inline void gg_on(void);
 inline void gg_off_reset(void);
 void ISR_glitch(void);

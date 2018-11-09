@@ -2,9 +2,6 @@
 
 #include "ports.h"
 #include "global_cfg.h"
-#include <IfxPort_Io.h>
-#include <IfxPort_PinMap.h>
-#include <IfxGtm_PinMap.h>
 
 void ports_init(void) {
 	#if(OP_MODE	== TRANSMITTER)

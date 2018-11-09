@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define GLITCH_RESOLUTION		100
+#define GLITCH_RESOLUTION		1000
 #define GLITCH_TIME_UNIT		(BIT_TX_PERIOD / GLITCH_RESOLUTION)
 #define GLITCH_DURATION			(GLITCH_TIME_UNIT * 2)
 #define GLITCH_START_MIN		GLITCH_DURATION
@@ -25,13 +25,13 @@ void gg_update(void) {
 						  ((raw_rand > GLITCH_START_MAX) ? GLITCH_START_MAX : raw_rand);
 
 	if(tuned_rand <= (BIT_TX_PERIOD / 2)) {
-		if(tuned_rand > ((BIT_TX_PERIOD / 2) - (3 * GLITCH_DURATION))) {
-			tuned_rand = (BIT_TX_PERIOD / 2) - (3 * GLITCH_DURATION);
+		if(tuned_rand > ((BIT_TX_PERIOD / 2) - (2 * GLITCH_DURATION))) {
+			tuned_rand = (BIT_TX_PERIOD / 2) - (2 * GLITCH_DURATION);
 		}
 	}
 	else {
-		if(tuned_rand < ((BIT_TX_PERIOD / 2) + (3 * GLITCH_DURATION))) {
-			tuned_rand = (BIT_TX_PERIOD / 2) + (3 * GLITCH_DURATION);
+		if(tuned_rand < ((BIT_TX_PERIOD / 2) + (2 * GLITCH_DURATION))) {
+			tuned_rand = (BIT_TX_PERIOD / 2) + (2 * GLITCH_DURATION);
 		}
 	}
 

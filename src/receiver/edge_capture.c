@@ -6,7 +6,8 @@
 #include <IfxGtm_reg.h>
 #include <IfxSrc_reg.h>
 
-#define FLT_ACCEPTANCE_TIME		((1 * BIT_TX_PERIOD) / 5)
+#define DEGLITCH_PERCENT		10
+#define	DEGLITCH_ABSOLUTE		(BIT_TX_PERIOD / 100) * DEGLITCH_PERCENT
 
 void edge_capture_init(void) {
 	/* Enable CMU_CLK0
@@ -14,17 +15,19 @@ void edge_capture_init(void) {
 	 */
 	GTM_CMU_CLK_EN.B.EN_CLK0 = 0b10;
 
-	/* TIM Input Prescaler Mode */
-	GTM_TIM0_CH0_CTRL.B.TIM_EN   	= 0b1;	/* Enable TIM0_0 */
-	GTM_TIM0_CH0_CTRL.B.TIM_MODE 	= 0b11; /* TIPM */
-	GTM_TIM0_CH0_CTRL.B.ISL     	= 0b1;  /* Ignore DSL and treat both edges as active edge */
-	GTM_TIM0_CH0_CTRL.B.FLT_EN		= 0b1;	/* Enable FLT */
-	GTM_TIM0_CH0_CTRL.B.FLT_CNT_FRQ = 0b00;	/* FLT_CNT counts with CMU_CLK0 */
-	GTM_TIM0_CH0_CTRL.B.FLT_MODE_RE = 0b0;	/* Immediate edge propagation mode (acceptance time) */
-	GTM_TIM0_CH0_CTRL.B.FLT_MODE_FE = 0b0;	/* Immediate edge propagation mode (acceptance time) */
-	GTM_TIM0_CH0_CNTS.B.CNTS 		= 0;	/* After every 1 edge an TIM0_NEWVAL[x]_IRQ is raised */
-	GTM_TIM0_CH0_FLT_RE.B.FLT_RE 	= FLT_ACCEPTANCE_TIME;
-	GTM_TIM0_CH0_FLT_FE.B.FLT_FE 	= FLT_ACCEPTANCE_TIME;
+	/* Generates NEWVAL_IRQ_EN on each edge excluding glitches */
+	GTM_TIM0_CH0_CTRL.B.TIM_EN   	= 0b1;		/* Enable TIM0_0 */
+	GTM_TIM0_CH0_CTRL.B.TIM_MODE 	= 0b010;	/* TIM Input Event Mode (TIEM) */
+	GTM_TIM0_CH0_CTRL.B.ISL     	= 0b1;		/* Ignore DSL and treat both edges as active edge */
+	GTM_TIM0_CH0_CTRL.B.FLT_EN		= 0b1;		/* Enable FLT */
+	GTM_TIM0_CH0_CTRL.B.FLT_CNT_FRQ = 0b00;		/* FLT_CNT counts with CMU_CLK0 = 50 MHz */
+	GTM_TIM0_CH0_CTRL.B.FLT_MODE_RE = 0b1;		/* Individual de-glitch mode */
+	GTM_TIM0_CH0_CTRL.B.FLT_MODE_FE = 0b1;		/* Individual de-glitch mode */
+	GTM_TIM0_CH0_CTRL.B.FLT_CTR_RE  = 0b0;		/* Up/down counter */
+	GTM_TIM0_CH0_CTRL.B.FLT_CTR_FE  = 0b0;		/* Up/down counter */
+
+	GTM_TIM0_CH0_FLT_RE.B.FLT_RE 	= DEGLITCH_ABSOLUTE;
+	GTM_TIM0_CH0_FLT_FE.B.FLT_FE 	= DEGLITCH_ABSOLUTE;
 
 	GTM_TIM0_CH0_IRQ_EN.B.NEWVAL_IRQ_EN = 0b1;
 

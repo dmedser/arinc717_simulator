@@ -1,6 +1,7 @@
 /* Author: t.me/dmedser */
 
 #include "scu_clk_cfg.h"
+#include "global_cfg.h"
 #include "rtos.h"
 #include "gtm.h"
 #include "hbp_tx.h"

@@ -1,13 +1,14 @@
 /* Author: t.me/dmedser */
 
 #include "gtm.h"
-#include "global_cfg.h"
 #include <IfxGtm.h>
 #include <IfxScuCcu.h>
 
 /* fGTM  = fPLL / GTMDIV
  * fPLL = 200 MHz
  * Target fGTM = 50 MHz */
+
+uint32_t f_gtm = 0;
 
 void gtm_init(void) {
 	Ifx_GTM *gtm = &MODULE_GTM;
