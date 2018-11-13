@@ -19,6 +19,15 @@ void ports_init(void) {
 	/* HBP_RX */
 	{
 		IfxGtm_PinMap_setTimTin(&IfxGtm_TIM0_0_TIN32_P33_10_IN, IfxPort_InputMode_noPullDevice);
+
+		/* TEST */
+		const IfxPort_Io_ConfigPin TEST_OUT_cfg_pin[1] = {{&IfxPort_P33_9, IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1}};
+		const IfxPort_Io_Config TEST_OUT_cfg = {
+			sizeof(TEST_OUT_cfg_pin) / sizeof(IfxPort_Io_ConfigPin),
+			(IfxPort_Io_ConfigPin *)TEST_OUT_cfg_pin
+		};
+		IfxPort_Io_initModule(&TEST_OUT_cfg);
+		SET_PIN_LOW(TEST_OUT);
 	}
 	#endif
 }

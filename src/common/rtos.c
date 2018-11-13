@@ -3,14 +3,19 @@
 #include "rtos.h"
 #include "global_cfg.h"
 #include "isr_priorities.h"
-#include "sync.h"
+#include "hbp_rx.h"
+#include "can.h"
 #include "_Time_Machine_1ms_Level.h"
 #include <IfxCpu.h>
 #include <IfxGpt12_reg.h>
 #include <IfxSrc_reg.h>
 
-uint32_t cnt_100_us = 0;
-uint32_t cnt_1_ms = 0;
+static uint32_t cnt_100_us = 0;
+static uint32_t cnt_1_ms = 0;
+
+static uint64_t can_msg_data = 0;
+static uint16_t can_msg_id = 0;
+
 
 #if (OP_MODE == TRANSMITTER)
 	#define ISR_1_ms    ISR_1_ms_tx
@@ -98,6 +103,30 @@ void ISR_1_ms_tx(void) {
 
 void ISR_1_ms_rx(void) {
 	IfxCpu_forceDisableInterrupts();
+
+	/*
+	if(!superframe.is_empty()) {
+
+		#define idx_of_subframe_to_tx 					superframe.tx_idx
+		#define subframe_to_tx							superframe.subframes[idx_of_subframe_to_tx]
+		#define idx_of_word_to_tx 	  					subframe_to_tx.tx_idx
+		#define idx_of_subframe_to_rx					superframe.rx_idx
+
+		#define SUBFRAME_IS_TRANSMITTED					(idx_of_word_to_tx == FRAME_LEN)
+		#define NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME	1024
+
+		if(SUBFRAME_IS_TRANSMITTED) {
+			idx_of_word_to_tx = 0;
+			idx_of_subframe_to_tx = idx_of_subframe_to_rx;
+		}
+		else {
+			can_msg_data = superframe.get_8_bytes_from(&subframe_to_tx);
+			can_tx(can_msg_id, can_msg_data);
+			idx_of_word_to_tx += 4;
+			can_msg_id = (can_msg_id + 1) % NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME;
+		}
+	}
+	*/
 
 	cnt_1_ms++;
 

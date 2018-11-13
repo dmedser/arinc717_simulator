@@ -12,12 +12,12 @@
 
 #define SW_MASK						0xFFF00000
 
-#define SW1_CAPTURED				((bit_stream & SW_MASK) == SW1_REVERSED)
-#define SW2_CAPTURED				((bit_stream & SW_MASK) == SW2_REVERSED)
-#define SW3_CAPTURED				((bit_stream & SW_MASK) == SW3_REVERSED)
-#define SW4_CAPTURED				((bit_stream & SW_MASK) == SW4_REVERSED)
+#define SW1_CAPTURED				((bitstream.bits & SW_MASK) == SW1_REVERSED)
+#define SW2_CAPTURED				((bitstream.bits & SW_MASK) == SW2_REVERSED)
+#define SW3_CAPTURED				((bitstream.bits & SW_MASK) == SW3_REVERSED)
+#define SW4_CAPTURED				((bitstream.bits & SW_MASK) == SW4_REVERSED)
 
-#define ADJACENT_SWS_LOST			((bit_counter - last_adjacent_sws_stamp) > BITRATE_BPS)
+#define ADJACENT_SWS_LOST			((bitstream.counter - last_adjacent_sws_stamp) > BITRATE_BPS)
 
 #define ADJACENT_SW12_CAPTURED		0
 #define ADJACENT_SW23_CAPTURED		1
@@ -28,12 +28,11 @@
 #define FAIL						FALSE
 
 #define STAMPS_NUMBER				100
-#define BUF_U32_SIZE				STAMPS_NUMBER
 
-typedef struct buf_u32_t {
-	uint32_t buf[BUF_U32_SIZE];
+typedef struct sw_stamps_t {
+	uint32_t buf[STAMPS_NUMBER];
 	uint16_t idx;
-} buf_u32_t;
+} sw_stamps_t;
 
 typedef enum sw_tracking_state_t {
 	IDLE,
@@ -44,7 +43,7 @@ typedef enum sw_tracking_state_t {
 } sw_tracking_state_t;
 
 static sw_tracking_state_t sw_tracking_state = IDLE;
-static buf_u32_t sw_stamps = {{0}, 0};
+static sw_stamps_t sw_stamps = {{0}, 0};
 static uint32_t last_adjacent_sws_stamp = 0;
 static sync_flags_t sync_flags = 0;
 
@@ -54,8 +53,8 @@ inline void clear_stamps(void) {
 
 
 uint32_t make_stamp(void) {
-	sw_stamps.buf[sw_stamps.idx++] = bit_counter;
-	return bit_counter;
+	sw_stamps.buf[sw_stamps.idx++] = bitstream.counter;
+	return bitstream.counter;
 }
 
 
@@ -64,7 +63,7 @@ boolean find_adjacent_sws(void) {
 
 	for(; i < sw_stamps.idx; i++) {
 
-		if((bit_counter - sw_stamps.buf[i]) == BITRATE_BPS) {
+		if((bitstream.counter - sw_stamps.buf[i]) == BITRATE_BPS) {
 			return SUCCESS;
 		}
 

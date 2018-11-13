@@ -1,30 +1,62 @@
 /* Author: t.me/dmedser */
 
 #include "hbp_rx.h"
-#include "global_cfg.h"
 #include "edge_capture.h"
 #include "bit_capture.h"
 #include "sync.h"
 #include <IfxGtm_reg.h>
 #include <IfxCpu.h>
-#include <Platform_Types.h>
 
 #define ALL_SYNC_FLAGS_ARE_SET				((sync_flags & SYNC_FLAGS_MASK) == SYNC_FLAGS_MASK)
 #define NEW_2_WORDS_IN_BIT_STREAM_READY		((frame_bit_counter % (BITS_IN_WORD * 2)) == 0)
 #define SUBFRAME_RECEIVED 					(frame_bit_counter == (BITRATE_BPS - 1))
 
-typedef struct frame_t {
-	uint16_t buf[FRAME_LEN];
-	uint16_t idx;
-} frame_t;
-
-uint32_t bit_counter = 0;
-uint32_t bit_stream = 0;
+boolean superframe_is_empty(void);
+uint64_t superframe_get_8_bytes_from(frame_t *frame);
+void bitstream_put_2_decoded_words_into(frame_t *frame);
 
 static boolean first_edge = TRUE;
 static uint32_t frame_bit_counter = 0;
-static frame_t superframe[NUM_OF_SUBFRAMES] = {{{0}, 0}, {{0}, 0}, {{0}, 0}, {{0}, 0}};
-static uint8_t rx_subframe_no = 0;
+
+superframe_t superframe = {{{{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}}, 0,	0,
+							superframe_is_empty,
+							superframe_get_8_bytes_from};
+
+bitstream_t bitstream = {0, 0, bitstream_put_2_decoded_words_into};
+
+boolean superframe_is_empty(void) {
+	return (superframe.tx_idx == superframe.rx_idx);
+}
+
+uint64_t superframe_get_8_bytes_from(frame_t *frame) {
+	uint64_t words[4] = {0};
+	uint8_t i = 0;
+	for(; i < 4; i++) {
+		words[i] = (uint64_t)(frame->buf[frame->tx_idx + i]);
+	}
+	return (words[0] << 48) | (words[1] << 32) | (words[2] << 16) | (words[3] << 0);
+}
+
+void bitstream_put_2_decoded_words_into(frame_t *frame) {
+	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
+	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
+	#define BIT_31(u32)		(u32 & 0x80000000)
+
+	uint32_t lw = BITS_31_20(bitstream.bits);
+	uint32_t rw = BITS_19_8(bitstream.bits) << 12;
+	uint8_t i = 0;
+	for(; i < 13; i++) {
+		if(BIT_31(lw) != 0) {
+			frame->buf[frame->rx_idx] |= (1 << i);
+		}
+		if(BIT_31(rw) != 0) {
+			frame->buf[frame->rx_idx + 1] |= (1 << i);
+		}
+		lw <<= 1;
+		rw <<= 1;
+	}
+}
+
 
 void hbp_rx_init(void) {
 	edge_capture_init();
@@ -37,35 +69,14 @@ void hbp_rx_process(void) {
 }
 
 /*
-inline void put_raw_2_words_into(frame_t *frame) {
+void bitstream_put_2_raw_words_into(frame_t *frame) {
 	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
 	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
 
-	frame->buf[frame->idx++] = (uint16_t)(BITS_31_20(bit_stream) >> 20);
-	frame->buf[frame->idx++] = (uint16_t)(BITS_19_8(bit_stream) >> 8);
+	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_31_20(bitstream.bits) >> 20);
+	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_19_8(bitstream.bits) >> 8);
 }
 */
-
-void put_decoded_2_words_into(frame_t *frame) {
-	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
-	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
-	#define BIT_31(u32)		(u32 & 0x80000000)
-
-	uint32_t lw = BITS_31_20(bit_stream);
-	uint32_t rw = BITS_19_8(bit_stream) << 12;
-	uint8_t i = 0;
-	for(; i < 13; i++) {
-		if(BIT_31(lw) != 0) {
-			frame->buf[frame->idx] |= (1 << i);
-		}
-		if(BIT_31(rw) != 0) {
-			frame->buf[frame->idx + 1] |= (1 << i);
-		}
-		lw <<= 1;
-		rw <<= 1;
-	}
-	frame->idx += 2;
-}
 
 
 inline void bitrate_error_handling(void) {
@@ -91,29 +102,38 @@ void ISR_edge_capture(void) {
 
 		/* Half period */
 		if((HALF_BIT_TX_PERIOD_LOWER_BOUND < btc_value) && (btc_value < HALF_BIT_TX_PERIOD_UPPER_BOUND)) {
-				bit_stream |= 1;
+			bitstream.bits |= 1;
 		}
 
 		/* Full period */
 		else if((BIT_TX_PERIOD_LOWER_BOUND < btc_value) && (btc_value < BIT_TX_PERIOD_UPPER_BOUND)) {
 				btc_reset();
-				bit_stream <<= 1;
-				bit_counter++;
+				bitstream.bits <<= 1;
+				bitstream.counter++;
 
 				sync_flags_t sync_flags = sw_tracking();
 
 				if(ALL_SYNC_FLAGS_ARE_SET) {
+
+					#define idx_of_subframe_to_rx 	superframe.rx_idx
+					#define subframe_to_rx 			superframe.subframes[idx_of_subframe_to_rx]
+					#define	idx_of_word_to_rx 		subframe_to_rx.rx_idx
+
 					if(NEW_2_WORDS_IN_BIT_STREAM_READY) {
-						put_decoded_2_words_into(&superframe[rx_subframe_no]);
+						bitstream.put_2_decoded_words_into(&subframe_to_rx);
+						idx_of_word_to_rx += 2;
 					}
+
 					if(SUBFRAME_RECEIVED) {
-						superframe[rx_subframe_no].idx = 0;
-						rx_subframe_no = (rx_subframe_no + 1) % NUM_OF_SUBFRAMES;
+						idx_of_word_to_rx = 0;
+						idx_of_subframe_to_rx = (idx_of_subframe_to_rx + 1) % NUM_OF_SUBFRAMES;
 						frame_bit_counter = 0;
 					}
+
 					else {
 						frame_bit_counter++;
 					}
+
 				}
 
 		}
@@ -121,7 +141,6 @@ void ISR_edge_capture(void) {
 		else {
 			bitrate_error_handling();
 		}
-
 
 	}
 

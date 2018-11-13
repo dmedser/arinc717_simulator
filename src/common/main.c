@@ -7,6 +7,7 @@
 #include "hbp_tx.h"
 #include "hbp_rx.h"
 #include "ports.h"
+#include "can.h"
 #include <IfxCpu.h>
 
 /* TC212L */
@@ -22,9 +23,11 @@ int main(void) {
 
 	scu_clk_init();
 
-	rtos_init();
-
 	gtm_init();
+
+	can_init();
+
+	rtos_init();
 
 	#if(OP_MODE == TRANSMITTER)
 	hbp_tx_init();

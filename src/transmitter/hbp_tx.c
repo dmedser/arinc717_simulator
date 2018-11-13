@@ -4,8 +4,10 @@
 #include "global_cfg.h"
 #include "ports.h"
 #include "pwm.h"
-#include "MulticanBasic.h"
+/* Glitch mode */
+/*
 #include "glitch.h"
+*/
 #include "dd_ram.h"
 #include <IfxGtm_reg.h>
 #include <IfxPort.h>
@@ -21,8 +23,11 @@
 #define RECEIVED_OPCODE		CAN_InBox_Buffer8_data[0]
 #define START				0xFF
 #define STOP				0x01
+/* Glitch mode */
+/*
 #define GLITCHES_ENABLE		0x02
 #define GLITCHES_DISABLE	0x03
+*/
 #define ND					0x00
 
 #define BUF_U16_SIZE		NUM_OF_SUBFRAMES
@@ -41,7 +46,10 @@ typedef struct buf_u16_t {
 static buf_u16_t sws = {{SW1, SW2, SW3, SW4}, 0};
 static txd_t txd = {{0}, 0, 0};
 static uint16_t increment = 0;
+/* Glitch mode */
+/*
 static boolean glitches_enabled = FALSE;
+*/
 
 void txd_init(){
 	txd.buf[0] = sws.buf[0];
@@ -60,9 +68,11 @@ void txd_init(){
 
 void hbp_tx_init(void) {
 	pwm_init();
-	MulticanBasic_init();
 	txd_init();
+	/* Glitch mode */
+	/*
 	glitch_generator_init();
+	*/
 }
 
 
@@ -92,6 +102,8 @@ void hbp_tx_process(void) {
 			increment = 0;
 			sws.idx = 0;
 			break;
+		/* Glitch mode */
+		/*
 		case GLITCHES_ENABLE:
 			RECEIVED_OPCODE = ND;
 			glitches_enabled = TRUE;
@@ -100,6 +112,7 @@ void hbp_tx_process(void) {
 			RECEIVED_OPCODE = ND;
 			glitches_enabled = FALSE;
 			break;
+		*/
 		}
 	}
 }
@@ -124,7 +137,10 @@ void ISR_bit_tx(void) {
 		if(WORD_IS_PASSED) {
 
 			txd.rsh = 0;
-		//	stop_hbp_tx();
+			/* Transmit single word  */
+			/*
+			stop_hbp_tx();
+			*/
 
 			if(txd.idx == 0) {
 				sws.idx = (sws.idx + 1) % 4;
@@ -140,30 +156,35 @@ void ISR_bit_tx(void) {
 
 		TOGGLE_PIN(HBP_OUT);
 
-		//}
-		//else {
-		//	txd.rsh++;
-		//	TOGGLE_PIN(HBP_OUT);
-		//}
+		/* Transmit single word  */
+		/*
+		}
+		else {
+			txd.rsh++;
+			TOGGLE_PIN(HBP_OUT);
+		}
+		*/
 
-
-
+		/* Glitch mode */
+		/*
 		if(glitches_enabled) {
 			if(abs(rand()) % 2 == 1) {
 				gg_on();
 			}
 		}
+		*/
 	}
 
 	IfxCpu_enableInterrupts();
 }
 
-
+/* Glitch mode */
+/*
 void ISR_glitch(void) {
 	IfxCpu_forceDisableInterrupts();
 	TOGGLE_PIN(HBP_OUT);
 
-	/* Glitch end */
+	// Glitch end
 	if(GTM_TOM0_CH1_IRQ_NOTIFY.B.CCU0TC == 0b1) {
 
 		gg_off_reset();
@@ -171,10 +192,11 @@ void ISR_glitch(void) {
 		gg_update();
 	}
 
-	/* Flag must be cleared manually */
+	// Flag must be cleared manually
 	GTM_TOM0_CH1_IRQ_NOTIFY.B.CCU0TC = 0b1;
 	GTM_TOM0_CH1_IRQ_NOTIFY.B.CCU1TC = 0b1;
 
 	IfxCpu_enableInterrupts();
 }
+*/
 
