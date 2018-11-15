@@ -5,6 +5,7 @@
 #include "global_cfg.h"
 #include <IfxGtm_reg.h>
 #include <IfxSrc_reg.h>
+#include <machine/cint.h>
 
 #define DEGLITCH_PERCENT		10
 #define	DEGLITCH_ABSOLUTE		(BIT_TX_PERIOD / 100) * DEGLITCH_PERCENT
@@ -31,11 +32,10 @@ void edge_capture_init(void) {
 
 	GTM_TIM0_CH0_IRQ_EN.B.NEWVAL_IRQ_EN = 0b1;
 
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRPN = ISR_PN_GTM_TIM0_CH0;
+	/* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRPN = ISR_PN_EDGE_CAPTURE;
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GTM_TIM0_CH0, (void (*) (int))ISR_edge_capture, 0);
-
+	_install_int_handler(ISR_PN_EDGE_CAPTURE, (void (*) (int))ISR_edge_capture, 0);
 }
 

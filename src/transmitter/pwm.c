@@ -5,6 +5,7 @@
 #include "global_cfg.h"
 #include <IfxGtm_reg.h>
 #include <IfxSrc_reg.h>
+#include <machine/cint.h>
 
 #define PWM_PERIOD		BIT_TX_PERIOD
 
@@ -22,11 +23,11 @@ void pwm_init(void) {
 	GTM_TOM0_CH12_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
 	GTM_TOM0_CH12_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_GTM_TOM0_CH12;
+	/* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_BIT_TX_PWM;
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GTM_TOM0_CH12, (void (*) (int))ISR_bit_tx, 0);
+	_install_int_handler(ISR_PN_BIT_TX_PWM, (void (*) (int))ISR_bit_tx, 0);
 
 	/* Apply the updates */
 	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;

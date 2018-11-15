@@ -72,7 +72,7 @@ boolean find_adjacent_sws(void) {
 }
 
 
-inline void set_sync_flag(uint8_t sf_pos) {
+void set_sync_flag(uint8_t sf_pos) {
 	sync_flags |= (1 << sf_pos);
 }
 

@@ -14,6 +14,7 @@
 boolean superframe_is_empty(void);
 uint64_t superframe_get_8_bytes_from(frame_t *frame);
 void bitstream_put_2_decoded_words_into(frame_t *frame);
+void bitstream_put_2_raw_words_into(frame_t *frame);
 
 static boolean first_edge = TRUE;
 static uint32_t frame_bit_counter = 0;
@@ -64,11 +65,7 @@ void hbp_rx_init(void) {
 }
 
 
-void hbp_rx_process(void) {
-	while(1);
-}
 
-/*
 void bitstream_put_2_raw_words_into(frame_t *frame) {
 	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
 	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
@@ -76,7 +73,7 @@ void bitstream_put_2_raw_words_into(frame_t *frame) {
 	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_31_20(bitstream.bits) >> 20);
 	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_19_8(bitstream.bits) >> 8);
 }
-*/
+
 
 
 inline void bitrate_error_handling(void) {
@@ -84,6 +81,11 @@ inline void bitrate_error_handling(void) {
 	btc_reset();
 	clear_sync_flags();
 	first_edge = TRUE;
+}
+
+
+inline void call_can_tx_routine(void) {
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SETR = 0b1;
 }
 
 
@@ -107,35 +109,37 @@ void ISR_edge_capture(void) {
 
 		/* Full period */
 		else if((BIT_TX_PERIOD_LOWER_BOUND < btc_value) && (btc_value < BIT_TX_PERIOD_UPPER_BOUND)) {
-				btc_reset();
-				bitstream.bits <<= 1;
-				bitstream.counter++;
+			btc_reset();
+			bitstream.bits <<= 1;
+			bitstream.counter++;
 
-				sync_flags_t sync_flags = sw_tracking();
+			sync_flags_t sync_flags = sw_tracking();
 
-				if(ALL_SYNC_FLAGS_ARE_SET) {
+			if(ALL_SYNC_FLAGS_ARE_SET) {
 
-					#define idx_of_subframe_to_rx 	superframe.rx_idx
-					#define subframe_to_rx 			superframe.subframes[idx_of_subframe_to_rx]
-					#define	idx_of_word_to_rx 		subframe_to_rx.rx_idx
+				#define idx_of_subframe_to_rx 	superframe.rx_idx
+				#define subframe_to_rx 			superframe.subframes[idx_of_subframe_to_rx]
+				#define	idx_of_word_to_rx 		subframe_to_rx.rx_idx
 
-					if(NEW_2_WORDS_IN_BIT_STREAM_READY) {
-						bitstream.put_2_decoded_words_into(&subframe_to_rx);
-						idx_of_word_to_rx += 2;
-					}
-
-					if(SUBFRAME_RECEIVED) {
-						idx_of_word_to_rx = 0;
-						idx_of_subframe_to_rx = (idx_of_subframe_to_rx + 1) % NUM_OF_SUBFRAMES;
-						frame_bit_counter = 0;
-					}
-
-					else {
-						frame_bit_counter++;
-					}
-
+				if(NEW_2_WORDS_IN_BIT_STREAM_READY) {
+					bitstream.put_2_decoded_words_into(&subframe_to_rx);
+					idx_of_word_to_rx += 2;
 				}
 
+				if(SUBFRAME_RECEIVED) {
+					idx_of_word_to_rx = 0;
+					idx_of_subframe_to_rx = (idx_of_subframe_to_rx + 1) % NUM_OF_SUBFRAMES;
+					frame_bit_counter = 0;
+				}
+				else {
+					frame_bit_counter++;
+				}
+
+				if(!superframe.is_empty()) {
+					call_can_tx_routine();
+				}
+
+			}
 		}
 
 		else {
@@ -143,6 +147,8 @@ void ISR_edge_capture(void) {
 		}
 
 	}
+
+
 
 	IfxCpu_enableInterrupts();
 }

@@ -28,4 +28,7 @@
 #define SW3											0b101001000111
 #define SW4											0b110110111000
 
+#define CAN_DST_MO_MSG_ID_TRANSMITTER				0x401
+#define CAN_DST_MO_MSG_ID_RECEIVER					0x402
+
 #endif /* GLOBAL_CFG_H_ */

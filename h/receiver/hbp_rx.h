@@ -18,7 +18,7 @@ typedef struct superframe_t {
 	uint8_t tx_idx;							/* Transmit to CAN */
 	uint8_t rx_idx;							/* Receive from ARINC */
 	boolean (*is_empty)(void);
-	uint64_t (*get_8_bytes_from)(uint8_t frame_idx, uint16_t word_idx);
+	uint64_t (*get_8_bytes_from)(frame_t *frame);
 } superframe_t;
 
 typedef struct bitstream_t {
@@ -28,7 +28,6 @@ typedef struct bitstream_t {
 } bitstream_t;
 
 void hbp_rx_init(void);
-void hbp_rx_process(void);
 
 extern superframe_t superframe;
 extern bitstream_t bitstream;

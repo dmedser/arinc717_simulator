@@ -28,3 +28,4 @@ void gtm_init(void) {
 
 	f_gtm = IfxScuCcu_getGtmFrequency();
 }
+

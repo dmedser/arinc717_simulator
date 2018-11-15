@@ -3,7 +3,7 @@
 #ifndef RTOS_H_
 #define RTOS_H_
 
-void rtos_core_timer_100_us_init(void);
+void rtos_base_timer_100_us_init(void);
 void rtos_service_requests_init(void);
 void rtos_init(void);
 

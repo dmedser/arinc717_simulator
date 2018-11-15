@@ -7,6 +7,7 @@
 #include <IfxSrc_reg.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <machine/cint.h>
 
 #define GLITCH_RESOLUTION		1000
 #define GLITCH_TIME_UNIT		(BIT_TX_PERIOD / GLITCH_RESOLUTION)
@@ -19,7 +20,7 @@ uint16_t range_rand(uint16_t range) {
 }
 
 
-void gg_update(void) {
+inline void gg_update(void) {
 	uint16_t raw_rand = range_rand(BIT_TX_PERIOD);
 	uint16_t tuned_rand = (raw_rand < GLITCH_START_MIN) ? GLITCH_START_MIN :
 						  ((raw_rand > GLITCH_START_MAX) ? GLITCH_START_MAX : raw_rand);
@@ -40,7 +41,7 @@ void gg_update(void) {
 }
 
 
-void glitch_generator_init(void) {
+void gg_init(void) {
 	/* Enable FXCLK */
 	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
@@ -55,11 +56,11 @@ void glitch_generator_init(void) {
 	GTM_TOM0_CH1_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
 	GTM_TOM0_CH1_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_GTM_TOM0_CH1;
+	/* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_GLITCH;
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GTM_TOM0_CH1, (void (*) (int))ISR_glitch, 0);
+	_install_int_handler(ISR_PN_GLITCH, (void (*) (int))ISR_glitch, 0);
 
 	/* Apply the updates */
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
@@ -77,3 +78,4 @@ inline void gg_off_reset(void) {
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 	GTM_TOM0_CH1_CN0.B.CN0 = 0;
 }
+

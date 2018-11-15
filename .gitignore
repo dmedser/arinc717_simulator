@@ -54,15 +54,8 @@ local.properties
 .scala_dependencies
 .worksheet
 
-some_shit/
 Drivers_Library/
 SW/
-CCP/
-DD_LIB/
-Flash_Drv/
-Circullar_Buffer/
-diagram/
-Multican_Drv/
 ld/
 models/
 iROM/

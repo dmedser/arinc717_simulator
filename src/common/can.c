@@ -1,61 +1,110 @@
 /* Author: t.me/dmedser */
 
 #include "can.h"
+#include "hbp_tx.h"
+#include "hbp_rx.h"
+#include "global_cfg.h"
+#include "isr_priorities.h"
+#include <IfxMultican_Can.h>
+#include <IfxSrc_reg.h>
 #include <stdint.h>
 #include <Platform_Types.h>
+#include <machine/cint.h>
+
+#if(OP_MODE == TRANSMITTER)
+	#define CAN_DST_MO_MSG_ID   CAN_DST_MO_MSG_ID_TRANSMITTER
+#else
+	#define CAN_DST_MO_MSG_ID	CAN_DST_MO_MSG_ID_RECEIVER
+#endif
 
 /* CAN handle */
 static IfxMultican_Can can;
 
-/* Node handles */
-static IfxMultican_Can_Node can_src_node;
-static IfxMultican_Can_Node can_dst_node;
+/* Node handle */
+static IfxMultican_Can_Node can_node;
 
 /* Message Object handles */
+#if(OP_MODE == RECEIVER)
 static IfxMultican_Can_MsgObj can_src_mo;
+#endif
 static IfxMultican_Can_MsgObj can_dst_mo;
+
+#if(OP_MODE == RECEIVER)
+static uint16_t can_tx_msg_id = 0;
+#endif
 
 void can_init(void) {
 	/* CAN */
 	IfxMultican_Can_Config can_cfg;
+
 	/* Default settings */
 	IfxMultican_Can_initModuleConfig(&can_cfg, &MODULE_CAN);
+
 	IfxMultican_Can_initModule(&can, &can_cfg);
 
-
-	/* Source & destination nodes */
+	/* CAN node */
 	IfxMultican_Can_NodeConfig can_node_cfg;
+
 	/* Default settings */
 	IfxMultican_Can_Node_initConfig(&can_node_cfg, &can);
-	can_node_cfg.baudrate 	= 500000; 						/* 500 kBit/sec */
-	can_node_cfg.nodeId		= IfxMultican_NodeId_0;
-	can_node_cfg.rxPin 		= &IfxMultican_RXD0A_P02_1_IN;
-	can_node_cfg.txPin 		= &IfxMultican_TXD0_P02_0_OUT;
-	can_node_cfg.rxPinMode	= IfxPort_InputMode_pullUp;
-	can_node_cfg.txPinMode 	= IfxPort_OutputMode_pushPull;
-	IfxMultican_Can_Node_init(&can_src_node, &can_node_cfg);
-	IfxMultican_Can_Node_init(&can_dst_node, &can_node_cfg);
 
+	can_node_cfg.baudrate 					= 500000; 						/* 500 kBit/sec */
+	can_node_cfg.nodeId						= IfxMultican_NodeId_0;
+	can_node_cfg.rxPin 						= &IfxMultican_RXD0A_P02_1_IN;
+	can_node_cfg.txPin 						= &IfxMultican_TXD0_P02_0_OUT;
+	can_node_cfg.rxPinMode					= IfxPort_InputMode_pullUp;
+	can_node_cfg.txPinMode 					= IfxPort_OutputMode_pushPull;
+	can_node_cfg.transferInterrupt.enabled	= 0b1;
+	can_node_cfg.transferInterrupt.srcId	= IfxMultican_SrcId_0;
 
+	IfxMultican_Can_Node_init(&can_node, &can_node_cfg);
+
+	#if(OP_MODE == RECEIVER)
 	/* Source MO, TX */
 	{
 		IfxMultican_Can_MsgObjConfig can_src_mo_cfg;
+
 		/* Default settings */
-		IfxMultican_Can_MsgObj_initConfig(&can_src_mo_cfg, &can_src_node);
+		IfxMultican_Can_MsgObj_initConfig(&can_src_mo_cfg, &can_node);
+
 		can_src_mo_cfg.msgObjId = 0;
 		can_src_mo_cfg.frame 	= IfxMultican_Frame_transmit;
+
 		IfxMultican_Can_MsgObj_init(&can_src_mo, &can_src_mo_cfg);
 	}
+	#endif
 
 	/* Destination MO, RX */
 	{
 		IfxMultican_Can_MsgObjConfig can_dst_mo_cfg;
+
 		/* Default settings */
-		IfxMultican_Can_MsgObj_initConfig(&can_dst_mo_cfg, &can_dst_node);
-		can_dst_mo_cfg.msgObjId = 1;
-		can_dst_mo_cfg.frame 	= IfxMultican_Frame_receive;
+		IfxMultican_Can_MsgObj_initConfig(&can_dst_mo_cfg, &can_node);
+
+		can_dst_mo_cfg.msgObjId				= 1;
+		can_dst_mo_cfg.messageId			= CAN_DST_MO_MSG_ID;
+		can_dst_mo_cfg.frame				= IfxMultican_Frame_receive;
+		can_dst_mo_cfg.rxInterrupt.srcId	= IfxMultican_SrcId_0;
+		can_dst_mo_cfg.rxInterrupt.enabled  = TRUE;
+
 		IfxMultican_Can_MsgObj_init(&can_dst_mo, &can_dst_mo_cfg);
 	}
+
+	/* CAN receive interrupt */
+	/* Service request priority number */
+	MODULE_SRC.CAN.CAN[0].INT[0].B.SRPN = ISR_PN_CAN_RX;
+	/* Enable service request */
+	MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b1;
+	_install_int_handler(ISR_PN_CAN_RX, (void (*) (int))ISR_can_rx, 0);
+
+	#if(OP_MODE == RECEIVER)
+	/* CAN transmit interrupt */
+	/* Service request priority number */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;
+	/* Enable service request */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE = 0b1;
+	_install_int_handler(ISR_PN_CAN_TX, (void (*) (int))ISR_can_tx, 0);
+	#endif
 }
 
 
@@ -67,6 +116,7 @@ uint32_t swap_endianness(uint32_t value) {
 }
 
 
+#if(OP_MODE == RECEIVER)
 void can_tx(uint32_t id, uint64_t data) {
 	uint32_t data_low  = (uint32_t)data;
 	data_low = swap_endianness(data_low);
@@ -77,20 +127,70 @@ void can_tx(uint32_t id, uint64_t data) {
 	IfxMultican_Message tx_msg;
 	IfxMultican_Message_init(&tx_msg, id, data_low, data_high, IfxMultican_DataLengthCode_8);
 
-	IfxMultican_Can_MsgObj_sendMessage(&can_src_mo, &tx_msg);
 	while( IfxMultican_Can_MsgObj_sendMessage(&can_src_mo, &tx_msg) == IfxMultican_Status_notSentBusy );
 }
+#endif
 
 
-IfxMultican_Status can_test_rx(void) {
+void ISR_can_rx(void) {
 	IfxMultican_Message rx_msg;
 
-	/* Initialize the message structure with dummy values, will be replaced by the received values */
-	IfxMultican_Message_init(&rx_msg, 0xBEEF, 0xBA5EBA11, 0xC0CAC01A, IfxMultican_DataLengthCode_8);
+	IfxMultican_Can_MsgObj_readMessage(&can_dst_mo, &rx_msg);
 
-	/* Wait until MultiCAN received a new message */
-	while( IfxMultican_Can_MsgObj_isRxPending(&can_dst_mo) == FALSE);
+	if(rx_msg.id == CAN_DST_MO_MSG_ID) {
+		#if(OP_MODE == TRANSMITTER)
+		uint32_t data_high = swap_endianness(rx_msg.data[0]);
 
-	return IfxMultican_Can_MsgObj_readMessage(&can_dst_mo, &rx_msg);
+		uint8_t received_opcode = (uint8_t)(data_high >> 24);
+
+		#define START	0xFF
+		#define STOP	0x01
+
+		switch(received_opcode) {
+		case START:
+			start_hbp_tx();
+
+			/* TEST */
+			/* Disable CAN RX interrupts */
+			MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b0;
+
+			break;
+		case STOP:
+			stop_hbp_tx();
+			break;
+		}
+		#else
+
+
+		#endif
+	}
 }
+
+
+#if(OP_MODE == RECEIVER)
+void ISR_can_tx(void) {
+
+	/* Interrupts shouldn't be disabled here! */
+
+	#define idx_of_subframe_to_tx 					superframe.tx_idx
+	#define subframe_to_tx							superframe.subframes[idx_of_subframe_to_tx]
+	#define idx_of_word_to_tx 	  					subframe_to_tx.tx_idx
+	#define idx_of_subframe_to_rx					superframe.rx_idx
+
+	#define SUBFRAME_IS_TRANSMITTED					(idx_of_word_to_tx == FRAME_LEN)
+	#define NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME	1024
+
+	if(SUBFRAME_IS_TRANSMITTED) {
+		idx_of_word_to_tx = 0;
+		idx_of_subframe_to_tx = idx_of_subframe_to_rx;
+	}
+	else {
+		uint64_t can_tx_msg_data = superframe.get_8_bytes_from(&subframe_to_tx);
+		can_tx(can_tx_msg_id, can_tx_msg_data);
+		idx_of_word_to_tx += 4;
+		can_tx_msg_id = (can_tx_msg_id + 1) % NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME;
+	}
+
+}
+#endif
 

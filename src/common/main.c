@@ -1,13 +1,13 @@
 /* Author: t.me/dmedser */
 
-#include "scu_clk_cfg.h"
 #include "global_cfg.h"
-#include "rtos.h"
+#include "scu_clk_cfg.h"
 #include "gtm.h"
+#include "can.h"
+#include "rtos.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
 #include "ports.h"
-#include "can.h"
 #include <IfxCpu.h>
 
 /* TC212L */
@@ -27,7 +27,7 @@ int main(void) {
 
 	can_init();
 
-	rtos_init();
+	//rtos_init();
 
 	#if(OP_MODE == TRANSMITTER)
 	hbp_tx_init();
@@ -39,11 +39,7 @@ int main(void) {
 
 	IfxCpu_enableInterrupts();
 
-	#if(OP_MODE == TRANSMITTER)
-	hbp_tx_process();
-	#else
-	hbp_rx_process();
-	#endif
+	while(1);
 
 	return 0;
 }

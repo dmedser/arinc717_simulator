@@ -24,3 +24,4 @@ void scu_clk_init(void) {
 	/* Standard PLL initialization */
 	IfxScuCcu_init(&IfxScuCcu_testClockConfig);
 }
+

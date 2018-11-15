@@ -3,19 +3,13 @@
 #include "rtos.h"
 #include "global_cfg.h"
 #include "isr_priorities.h"
-#include "hbp_rx.h"
-#include "can.h"
-#include "_Time_Machine_1ms_Level.h"
 #include <IfxCpu.h>
 #include <IfxGpt12_reg.h>
 #include <IfxSrc_reg.h>
+#include <machine/cint.h>
 
 static uint32_t cnt_100_us = 0;
 static uint32_t cnt_1_ms = 0;
-
-static uint64_t can_msg_data = 0;
-static uint16_t can_msg_id = 0;
-
 
 #if (OP_MODE == TRANSMITTER)
 	#define ISR_1_ms    ISR_1_ms_tx
@@ -23,7 +17,7 @@ static uint16_t can_msg_id = 0;
 	#define ISR_1_ms	ISR_1_ms_rx
 #endif
 
-void rtos_core_timer_100_us_init(void) {
+void rtos_base_timer_100_us_init(void) {
 	IfxCpu_disableInterrupts();
 
 	uint16_t password = IfxScuWdt_getCpuWatchdogPassword();
@@ -50,11 +44,11 @@ void rtos_core_timer_100_us_init(void) {
 
 	IfxScuWdt_setCpuEndinit(password);
 
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_GPT12_6;
+	/* Service request priority number */
+	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_RTOS_BASE;
 	/* Enable service request */
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GPT12_6, (void (*) (int))ISR_100_us, 0);
+	_install_int_handler(ISR_PN_RTOS_BASE, (void (*) (int))ISR_100_us, 0);
 
 	/* Run timer */
 	MODULE_GPT120.T6CON.B.T6R = 0b1;
@@ -63,16 +57,16 @@ void rtos_core_timer_100_us_init(void) {
 
 void rtos_service_requests_init(void) {
 	/* SW_0 - 1 ms */
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRPN = ISR_PN_SW_0;
+	/* Service request priority number */
+	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRPN = ISR_PN_RTOS_1_MS;
 	/* Enable service request */
 	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRE = 0b1;
-	_install_int_handler(ISR_PN_SW_0, (void (*) (int))ISR_1_ms, 0);
+	_install_int_handler(ISR_PN_RTOS_1_MS, (void (*) (int))ISR_1_ms, 0);
 }
 
 
 void rtos_init(void) {
-	rtos_core_timer_100_us_init();
+	rtos_base_timer_100_us_init();
 	rtos_service_requests_init();
 }
 
@@ -95,7 +89,7 @@ void ISR_100_us(void){
 void ISR_1_ms_tx(void) {
 	IfxCpu_forceDisableInterrupts();
 
-	_Time_Machine_1ms_Level();
+	cnt_1_ms++;
 
 	IfxCpu_enableInterrupts();
 }
@@ -103,30 +97,6 @@ void ISR_1_ms_tx(void) {
 
 void ISR_1_ms_rx(void) {
 	IfxCpu_forceDisableInterrupts();
-
-	/*
-	if(!superframe.is_empty()) {
-
-		#define idx_of_subframe_to_tx 					superframe.tx_idx
-		#define subframe_to_tx							superframe.subframes[idx_of_subframe_to_tx]
-		#define idx_of_word_to_tx 	  					subframe_to_tx.tx_idx
-		#define idx_of_subframe_to_rx					superframe.rx_idx
-
-		#define SUBFRAME_IS_TRANSMITTED					(idx_of_word_to_tx == FRAME_LEN)
-		#define NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME	1024
-
-		if(SUBFRAME_IS_TRANSMITTED) {
-			idx_of_word_to_tx = 0;
-			idx_of_subframe_to_tx = idx_of_subframe_to_rx;
-		}
-		else {
-			can_msg_data = superframe.get_8_bytes_from(&subframe_to_tx);
-			can_tx(can_msg_id, can_msg_data);
-			idx_of_word_to_tx += 4;
-			can_msg_id = (can_msg_id + 1) % NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME;
-		}
-	}
-	*/
 
 	cnt_1_ms++;
 

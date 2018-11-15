@@ -4,6 +4,7 @@
 #include "isr_priorities.h"
 #include <IfxGtm_reg.h>
 #include <IfxSrc_reg.h>
+#include <machine/cint.h>
 
 void bit_capture_init(void) {
 	/* Enable FXCLK */
@@ -17,11 +18,11 @@ void bit_capture_init(void) {
 
 	GTM_TOM0_CH0_IRQ_EN.B.CCU0TC_IRQ_EN  = 0b1;
 
-	/* Service request priority number (0 - lowest, 0xFF - highest priority) */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_GTM_TOM0_CH0;
+	/* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_BIT_TX_TIMEOUT;
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE = 0b1;
-	_install_int_handler(ISR_PN_GTM_TOM0_CH0, (void (*) (int))ISR_bit_tx_timeout, 0);
+	_install_int_handler(ISR_PN_BIT_TX_TIMEOUT, (void (*) (int))ISR_bit_tx_timeout, 0);
 
 	/* Apply the updates */
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
