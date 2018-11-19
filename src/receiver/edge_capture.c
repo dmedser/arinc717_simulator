@@ -7,8 +7,8 @@
 #include <IfxSrc_reg.h>
 #include <machine/cint.h>
 
-#define DEGLITCH_PERCENT		10
-#define	DEGLITCH_ABSOLUTE		(BIT_TX_PERIOD / 100) * DEGLITCH_PERCENT
+#define DEGLITCH_TIME_PERCENT		10
+#define	DEGLITCH_TIME_ABSOLUTE		(BIT_TX_PERIOD / 100) * DEGLITCH_TIME_PERCENT
 
 void edge_capture_init(void) {
 	/* Enable CMU_CLK0
@@ -27,8 +27,8 @@ void edge_capture_init(void) {
 	GTM_TIM0_CH0_CTRL.B.FLT_CTR_RE  = 0b0;		/* Up/down counter */
 	GTM_TIM0_CH0_CTRL.B.FLT_CTR_FE  = 0b0;		/* Up/down counter */
 
-	GTM_TIM0_CH0_FLT_RE.B.FLT_RE 	= DEGLITCH_ABSOLUTE;
-	GTM_TIM0_CH0_FLT_FE.B.FLT_FE 	= DEGLITCH_ABSOLUTE;
+	GTM_TIM0_CH0_FLT_RE.B.FLT_RE 	= DEGLITCH_TIME_ABSOLUTE;
+	GTM_TIM0_CH0_FLT_FE.B.FLT_FE 	= DEGLITCH_TIME_ABSOLUTE;
 
 	GTM_TIM0_CH0_IRQ_EN.B.NEWVAL_IRQ_EN = 0b1;
 

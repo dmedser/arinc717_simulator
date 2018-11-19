@@ -11,10 +11,10 @@
 #define NEW_2_WORDS_IN_BIT_STREAM_READY		((frame_bit_counter % (BITS_IN_WORD * 2)) == 0)
 #define SUBFRAME_RECEIVED 					(frame_bit_counter == (BITRATE_BPS - 1))
 
-boolean superframe_is_empty(void);
-uint64_t superframe_get_8_bytes_from(frame_t *frame);
-void bitstream_put_2_decoded_words_into(frame_t *frame);
-void bitstream_put_2_raw_words_into(frame_t *frame);
+static boolean superframe_is_empty(void);
+static uint64_t superframe_get_8_bytes_from(frame_t *frame);
+static void bitstream_put_2_decoded_words_into(frame_t *frame);
+/*static void bitstream_put_2_raw_words_into(frame_t *frame);*/
 
 static boolean first_edge = TRUE;
 static uint32_t frame_bit_counter = 0;
@@ -25,20 +25,22 @@ superframe_t superframe = {{{{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}},
 
 bitstream_t bitstream = {0, 0, bitstream_put_2_decoded_words_into};
 
-boolean superframe_is_empty(void) {
+static boolean superframe_is_empty(void) {
 	return (superframe.tx_idx == superframe.rx_idx);
 }
 
-uint64_t superframe_get_8_bytes_from(frame_t *frame) {
+
+static uint64_t superframe_get_8_bytes_from(frame_t *frame) {
 	uint64_t words[4] = {0};
 	uint8_t i = 0;
 	for(; i < 4; i++) {
 		words[i] = (uint64_t)(frame->buf[frame->tx_idx + i]);
 	}
-	return (words[0] << 48) | (words[1] << 32) | (words[2] << 16) | (words[3] << 0);
+	return (words[3] << 48) | (words[2] << 32) | (words[1] << 16) | (words[0] << 0);
 }
 
-void bitstream_put_2_decoded_words_into(frame_t *frame) {
+
+static void bitstream_put_2_decoded_words_into(frame_t *frame) {
 	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
 	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
 	#define BIT_31(u32)		(u32 & 0x80000000)
@@ -65,18 +67,16 @@ void hbp_rx_init(void) {
 }
 
 
-
-void bitstream_put_2_raw_words_into(frame_t *frame) {
+/*static void bitstream_put_2_raw_words_into(frame_t *frame) {
 	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
 	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
 
 	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_31_20(bitstream.bits) >> 20);
 	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_19_8(bitstream.bits) >> 8);
-}
+}*/
 
 
-
-inline void bitrate_error_handling(void) {
+static inline void bitrate_error_handling(void) {
 	btc_off();
 	btc_reset();
 	clear_sync_flags();
@@ -84,7 +84,7 @@ inline void bitrate_error_handling(void) {
 }
 
 
-inline void call_can_tx_routine(void) {
+static inline void call_can_tx_routine(void) {
 	MODULE_SRC.GPSR.GPSR[0].SR1.B.SETR = 0b1;
 }
 
@@ -147,8 +147,6 @@ void ISR_edge_capture(void) {
 		}
 
 	}
-
-
 
 	IfxCpu_enableInterrupts();
 }

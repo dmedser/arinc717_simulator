@@ -4,7 +4,7 @@
 #include "scu_clk_cfg.h"
 #include "gtm.h"
 #include "can.h"
-#include "rtos.h"
+//#include "rtos.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
 #include "ports.h"

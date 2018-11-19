@@ -7,14 +7,11 @@
 #include <IfxGtm_reg.h>
 #include <IfxPort.h>
 #include <IfxCpu.h>
-#include <Platform_Types.h>
 
 #define RSH_MAX             11
 #define WORD_IS_PASSED		(txd.rsh == RSH_MAX)
 #define IT_WAS_LAST_WORD	(txd.num == 0)
 #define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
-
-#define BUF_U16_SIZE		NUM_OF_SUBFRAMES
 
 typedef struct txd_t {
 	uint16_t buf[FRAME_LEN];
@@ -22,16 +19,16 @@ typedef struct txd_t {
 	uint8_t  rsh;
 } txd_t;
 
-typedef struct buf_u16_t {
-	uint16_t buf[BUF_U16_SIZE];
+typedef struct sws_t {
+	uint16_t buf[NUM_OF_SUBFRAMES];
 	uint8_t  idx;
-} buf_u16_t;
+} sws_t;
 
-static buf_u16_t sws = {{SW1, SW2, SW3, SW4}, 0};
+static sws_t sws = {{SW1, SW2, SW3, SW4}, 0};
 static txd_t txd = {{0}, 0, 0};
 static uint16_t increment = 0;
 
-inline void txd_init(void){
+static inline void txd_init(void){
 	increment = 0;
 	sws.idx = 0;
 	txd.idx = 0;

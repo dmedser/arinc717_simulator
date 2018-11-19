@@ -3,7 +3,6 @@
 #include "can.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
-#include "global_cfg.h"
 #include "isr_priorities.h"
 #include <IfxMultican_Can.h>
 #include <IfxSrc_reg.h>
@@ -16,6 +15,12 @@
 #else
 	#define CAN_DST_MO_MSG_ID	CAN_DST_MO_MSG_ID_RECEIVER
 #endif
+
+/* TEST */
+//#define CAN_TX_MSG_ID_START	0x000
+//#define CAN_TX_MSG_ID_END		0x3FF
+
+#define CAN_TX_DEVICE_ID		0x7FF
 
 /* CAN handle */
 static IfxMultican_Can can;
@@ -30,6 +35,7 @@ static IfxMultican_Can_MsgObj can_src_mo;
 static IfxMultican_Can_MsgObj can_dst_mo;
 
 #if(OP_MODE == RECEIVER)
+static uint16_t can_tx_device_id = CAN_TX_DEVICE_ID;
 static uint16_t can_tx_msg_id = 0;
 #endif
 
@@ -108,7 +114,7 @@ void can_init(void) {
 }
 
 
-uint32_t swap_endianness(uint32_t value) {
+static uint32_t swap_endianness(uint32_t value) {
 	return ((value & ((uint32_t)0xFF << 0))  << 24) |
 		   ((value & ((uint32_t)0xFF << 8))  << 8)  |
 		   ((value & ((uint32_t)0xFF << 16)) >> 8)  |
@@ -117,12 +123,9 @@ uint32_t swap_endianness(uint32_t value) {
 
 
 #if(OP_MODE == RECEIVER)
-void can_tx(uint32_t id, uint64_t data) {
+static void can_tx(uint32_t id, uint64_t data) {
 	uint32_t data_low  = (uint32_t)data;
-	data_low = swap_endianness(data_low);
-
 	uint32_t data_high = (uint32_t)(data >> 32);
-	data_high = swap_endianness(data_high);
 
 	IfxMultican_Message tx_msg;
 	IfxMultican_Message_init(&tx_msg, id, data_low, data_high, IfxMultican_DataLengthCode_8);
@@ -151,7 +154,7 @@ void ISR_can_rx(void) {
 			start_hbp_tx();
 
 			/* TEST */
-			/* Disable CAN RX interrupts */
+			/* Disable CAN RX interrupts for transmitter */
 			MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b0;
 
 			break;
@@ -161,6 +164,7 @@ void ISR_can_rx(void) {
 		}
 		#else
 
+		/* Receiver CAN RX interrupt routine */
 
 		#endif
 	}
@@ -176,7 +180,6 @@ void ISR_can_tx(void) {
 	#define subframe_to_tx							superframe.subframes[idx_of_subframe_to_tx]
 	#define idx_of_word_to_tx 	  					subframe_to_tx.tx_idx
 	#define idx_of_subframe_to_rx					superframe.rx_idx
-
 	#define SUBFRAME_IS_TRANSMITTED					(idx_of_word_to_tx == FRAME_LEN)
 	#define NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME	1024
 
@@ -186,8 +189,20 @@ void ISR_can_tx(void) {
 	}
 	else {
 		uint64_t can_tx_msg_data = superframe.get_8_bytes_from(&subframe_to_tx);
-		can_tx(can_tx_msg_id, can_tx_msg_data);
+
+		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0)) << 12 |
+							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4)) << (28 - 4) |
+							   	   	   	  (uint64_t)(can_tx_msg_id & (0x3 << 8)) << (44 - 8);
+
+		can_tx_msg_data |= can_tx_msg_id_splitted;
+
+		can_tx(can_tx_device_id, can_tx_msg_data);
+
 		idx_of_word_to_tx += 4;
+
+		/* TEST */
+		//can_tx_msg_id = (can_tx_msg_id == CAN_TX_MSG_ID_END) ? CAN_TX_MSG_ID_START : (can_tx_msg_id + 1);
+
 		can_tx_msg_id = (can_tx_msg_id + 1) % NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME;
 	}
 

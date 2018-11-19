@@ -47,18 +47,18 @@ static sw_stamps_t sw_stamps = {{0}, 0};
 static uint32_t last_adjacent_sws_stamp = 0;
 static sync_flags_t sync_flags = 0;
 
-inline void clear_stamps(void) {
+static inline void clear_stamps(void) {
 	sw_stamps.idx = 0;
 }
 
 
-uint32_t make_stamp(void) {
+static uint32_t make_stamp(void) {
 	sw_stamps.buf[sw_stamps.idx++] = bitstream.counter;
 	return bitstream.counter;
 }
 
 
-boolean find_adjacent_sws(void) {
+static boolean find_adjacent_sws(void) {
 	uint16_t i = 0;
 
 	for(; i < sw_stamps.idx; i++) {
@@ -72,7 +72,7 @@ boolean find_adjacent_sws(void) {
 }
 
 
-void set_sync_flag(uint8_t sf_pos) {
+static void set_sync_flag(uint8_t sf_pos) {
 	sync_flags |= (1 << sf_pos);
 }
 

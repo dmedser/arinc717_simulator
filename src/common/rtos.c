@@ -1,7 +1,6 @@
 /* Author: t.me/dmedser */
 
 #include "rtos.h"
-#include "global_cfg.h"
 #include "isr_priorities.h"
 #include <IfxCpu.h>
 #include <IfxGpt12_reg.h>
@@ -12,12 +11,13 @@ static uint32_t cnt_100_us = 0;
 static uint32_t cnt_1_ms = 0;
 
 #if (OP_MODE == TRANSMITTER)
-	#define ISR_1_ms    ISR_1_ms_tx
+	#define ISR_rtos_1_ms   ISR_rtos_1_ms_transmitter
 #else
-	#define ISR_1_ms	ISR_1_ms_rx
+	#define ISR_rtos_1_ms	ISR_rtos_1_ms_receiver
 #endif
 
-void rtos_base_timer_100_us_init(void) {
+/* RTOS 100 us level */
+static void rtos_base_init(void) {
 	IfxCpu_disableInterrupts();
 
 	uint16_t password = IfxScuWdt_getCpuWatchdogPassword();
@@ -45,33 +45,33 @@ void rtos_base_timer_100_us_init(void) {
 	IfxScuWdt_setCpuEndinit(password);
 
 	/* Service request priority number */
-	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_RTOS_BASE;
+	MODULE_SRC.GPT12.GPT12[0].T6.B.SRPN = ISR_PN_RTOS_100_US;
 	/* Enable service request */
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRE = 0b1;
-	_install_int_handler(ISR_PN_RTOS_BASE, (void (*) (int))ISR_100_us, 0);
+	_install_int_handler(ISR_PN_RTOS_100_US, (void (*) (int))ISR_rtos_100_us, 0);
 
 	/* Run timer */
 	MODULE_GPT120.T6CON.B.T6R = 0b1;
 }
 
 
-void rtos_service_requests_init(void) {
+static void rtos_service_requests_init(void) {
 	/* SW_0 - 1 ms */
 	/* Service request priority number */
 	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRPN = ISR_PN_RTOS_1_MS;
 	/* Enable service request */
 	MODULE_SRC.GPSR.GPSR[0].SR0.B.SRE = 0b1;
-	_install_int_handler(ISR_PN_RTOS_1_MS, (void (*) (int))ISR_1_ms, 0);
+	_install_int_handler(ISR_PN_RTOS_1_MS, (void (*) (int))ISR_rtos_1_ms, 0);
 }
 
 
 void rtos_init(void) {
-	rtos_base_timer_100_us_init();
+	rtos_base_init();
 	rtos_service_requests_init();
 }
 
 
-void ISR_100_us(void){
+void ISR_rtos_100_us(void){
 	IfxCpu_forceDisableInterrupts();
 
 	cnt_100_us++;
@@ -86,20 +86,21 @@ void ISR_100_us(void){
 }
 
 
-void ISR_1_ms_tx(void) {
+#if(OP_MODE == TRANSMITTER)
+void ISR_rtos_1_ms_transmitter(void) {
 	IfxCpu_forceDisableInterrupts();
 
 	cnt_1_ms++;
 
 	IfxCpu_enableInterrupts();
 }
-
-
-void ISR_1_ms_rx(void) {
+#else
+void ISR_rtos_1_ms_receiver(void) {
 	IfxCpu_forceDisableInterrupts();
 
 	cnt_1_ms++;
 
 	IfxCpu_enableInterrupts();
 }
+#endif
 

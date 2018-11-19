@@ -15,7 +15,7 @@
 #define GLITCH_START_MIN		GLITCH_DURATION
 #define GLITCH_START_MAX		(BIT_TX_PERIOD - (2 * GLITCH_DURATION))
 
-uint16_t range_rand(uint16_t range) {
+static uint16_t range_rand(uint16_t range) {
 	return abs(rand() % (range + 1));
 }
 

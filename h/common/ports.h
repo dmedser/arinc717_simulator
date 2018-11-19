@@ -14,7 +14,7 @@
 #define HBP_OUT           &MODULE_P15, 0
 #define HBP_IN            &MODULE_P33, 10
 
-#define TEST_OUT		  &MODULE_P33, 9
+/*#define TEST_OUT		  &MODULE_P33, 9*/
 
 void ports_init(void);
 

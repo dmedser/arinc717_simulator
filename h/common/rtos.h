@@ -3,12 +3,16 @@
 #ifndef RTOS_H_
 #define RTOS_H_
 
-void rtos_base_timer_100_us_init(void);
-void rtos_service_requests_init(void);
+#include "global_cfg.h"
+
 void rtos_init(void);
 
-void ISR_100_us(void);
-void ISR_1_ms_tx(void);
-void ISR_1_ms_rx(void);
+void ISR_rtos_100_us(void);
+
+#if(OP_MODE == TRANSMITTER)
+void ISR_rtos_1_ms_transmitter(void);
+#else
+void ISR_rtos_1_ms_receiver(void);
+#endif
 
 #endif /* RTOS_H_ */

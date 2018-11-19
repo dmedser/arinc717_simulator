@@ -34,6 +34,7 @@ inline void btc_on(void) {
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
+
 inline void btc_off(void) {
 	GTM_TOM0_TGC0_ENDIS_CTRL.B.ENDIS_CTRL0 = 0b01;
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
