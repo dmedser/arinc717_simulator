@@ -25,13 +25,20 @@
 #define SUBFRAME_LEN_MAX					(BITRATE_BPS_MAX / BITS_IN_WORD)
 #define NUMBER_OF_SUBFRAMES					4
 
-#define CAN_DST_MO_MSG_ID_TRANSMITTER		0x601
-#define CAN_DST_MO_MSG_ID_RECEIVER			0x602
+#define TRANSMITTER_ID						0x601
+#define RECEIVER_ID							0x602
 
 typedef uint8_t param_no;
 
 #define BITRATE								0
 #define SYNC_WORDS							1
+
+#define BITRATE_BPS_DEFAULT					BITRATE_BPS_MAX
+
+#define SW_1_DEFAULT						0b001001000111	// 0x0247
+#define SW_2_DEFAULT						0b010110111000	// 0x05B8
+#define SW_3_DEFAULT						0b101001000111	// 0x0A47
+#define SW_4_DEFAULT						0b110110111000	// 0x0DB8
 
 extern uint16_t bitrate_bps;
 extern uint16_t bit_tx_period;
@@ -40,7 +47,5 @@ extern uint32_t sync_words_reversed[NUMBER_OF_SUBFRAMES];
 
 void update_sync_word(uint8_t idx, uint16_t value);
 void update_bitrate_bps(uint16_t value);
-void upload_into_dflash(param_no param);
-void download_from_dflash(param_no param);
 
 #endif /* GLOBAL_CFG_H_ */

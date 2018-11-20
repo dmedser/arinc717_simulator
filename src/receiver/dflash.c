@@ -2,8 +2,15 @@
 
 #include "dflash.h"
 #include <IfxFlash.h>
+#include <IfxFlash_cfg.h>
 
-void dflash_wr_u64(uint32_t addr, uint64_t data) {
+#define	DFLASH_PAGE_SIZE						sizeof(uint64_t)
+#define DFLASH_ADDRESS(START_ADDRESS, OFFSET)	(START_ADDRESS + (OFFSET * DFLASH_PAGE_SIZE))
+#define BITRATE_DFLASH_ADDRESS					DFLASH_ADDRESS(IFXFLASH_DFLASH_START, 0)
+#define SYNC_WORD_DFLASH_ADDRESS(NUMBER)		DFLASH_ADDRESS(IFXFLASH_DFLASH_START, NUMBER)
+
+/* Writes 64-bit word to an data flash absolute address (8-byte aligned) */
+static void dflash_wr_u64(uint32_t addr, uint64_t data) {
 
 	IfxFlash_waitUnbusy(0, IfxFlash_FlashType_D0);
 
@@ -33,7 +40,41 @@ void dflash_wr_u64(uint32_t addr, uint64_t data) {
 }
 
 
-uint64_t dflash_rd_u64(uint32_t addr) {
+static uint64_t dflash_rd_u64(uint32_t addr) {
 	return (uint64_t)*((uint32_t *)addr);
+}
+
+
+void upload_into_dflash(param_no param) {
+	switch(param){
+		case BITRATE: {
+			dflash_wr_u64(BITRATE_DFLASH_ADDRESS, (uint64_t)bitrate_bps);
+			break;
+		}
+		case SYNC_WORDS: {
+			uint8_t i = 0;
+			for(; i < NUMBER_OF_SUBFRAMES; i++) {
+				dflash_wr_u64(SYNC_WORD_DFLASH_ADDRESS((i + 1)), (uint64_t)sync_words[i]);
+			}
+			break;
+		}
+	}
+}
+
+
+void download_from_dflash(param_no param) {
+	switch(param){
+		case BITRATE: {
+			update_bitrate_bps((uint16_t)dflash_rd_u64(BITRATE_DFLASH_ADDRESS));
+			break;
+		}
+		case SYNC_WORDS: {
+			uint8_t i = 0;
+			for(; i < NUMBER_OF_SUBFRAMES; i++) {
+				update_sync_word(i, (uint16_t)dflash_rd_u64(SYNC_WORD_DFLASH_ADDRESS((i + 1))));
+			}
+			break;
+		}
+	}
 }
 

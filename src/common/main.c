@@ -6,8 +6,10 @@
 #include "can.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
+#include "dflash.h"
 #include "ports.h"
 #include <IfxCpu.h>
+#include <machine/cint.h>
 
 /* TC212L */
 
@@ -24,18 +26,14 @@ int main(void) {
 
 	gtm_init();
 
-	#if(OP_MODE == TRANSMITTER)
-
-	hbp_tx_init();
-
-	#else
-
 	download_from_dflash(BITRATE);
 
 	download_from_dflash(SYNC_WORDS);
 
+	#if(OP_MODE == TRANSMITTER)
+	hbp_tx_init();
+	#else
 	hbp_rx_init();
-
 	#endif
 
 	can_init();

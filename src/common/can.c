@@ -11,16 +11,10 @@
 #include <machine/cint.h>
 
 #if(OP_MODE == TRANSMITTER)
-	#define CAN_DST_MO_MSG_ID   CAN_DST_MO_MSG_ID_TRANSMITTER
+	#define CAN_DST_MO_MSG_ID   TRANSMITTER_ID
 #else
-	#define CAN_DST_MO_MSG_ID	CAN_DST_MO_MSG_ID_RECEIVER
+	#define CAN_DST_MO_MSG_ID	RECEIVER_ID
 #endif
-
-/* TEST */
-//#define CAN_TX_MSG_ID_START	0x000
-//#define CAN_TX_MSG_ID_END		0x3FF
-
-#define CAN_TX_DEVICE_ID		0x7FF
 
 /* CAN handle */
 static IfxMultican_Can can;
@@ -35,7 +29,6 @@ static IfxMultican_Can_MsgObj can_src_mo;
 static IfxMultican_Can_MsgObj can_dst_mo;
 
 #if(OP_MODE == RECEIVER)
-static uint16_t can_tx_device_id = CAN_TX_DEVICE_ID;
 static uint16_t can_tx_msg_id = 0;
 #endif
 
@@ -184,20 +177,14 @@ void ISR_can_tx(void) {
 	}
 	else {
 		uint64_t can_tx_msg_data = frame.get_8_bytes_from(&subframe_to_tx);
-
 		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
-
 		can_tx_msg_data |= can_tx_msg_id_splitted;
-
-		can_tx(can_tx_device_id, can_tx_msg_data);
-
+		can_tx(RECEIVER_ID, can_tx_msg_data);
 		idx_of_word_to_tx += 4;
-
 		can_tx_msg_id++;
-
 	}
 
 }
