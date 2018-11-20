@@ -6,7 +6,7 @@
 #include <IfxSrc_reg.h>
 #include <machine/cint.h>
 
-void bit_capture_init(void) {
+void bit_capture_timer_init(void) {
 	/* Enable FXCLK */
 	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
@@ -29,24 +29,29 @@ void bit_capture_init(void) {
 }
 
 
-inline void btc_on(void) {
+inline void bit_capture_timer_update(void) {
+	GTM_TOM0_CH0_SR0.B.SR0 = BIT_TX_PERIOD_UPPER_BOUND;
+}
+
+
+inline void bct_on(void) {
 	GTM_TOM0_TGC0_ENDIS_CTRL.B.ENDIS_CTRL0 = 0b10;
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
 
-inline void btc_off(void) {
+inline void bct_off(void) {
 	GTM_TOM0_TGC0_ENDIS_CTRL.B.ENDIS_CTRL0 = 0b01;
 	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
 
-inline void btc_reset(void) {
+inline void bct_reset(void) {
 	GTM_TOM0_CH0_CN0.B.CN0 = 0;
 }
 
 
-uint16_t get_btc_value(void) {
+uint16_t get_bct_value(void) {
 	return (uint16_t)GTM_TOM0_CH0_CN0.B.CN0;
 }
 

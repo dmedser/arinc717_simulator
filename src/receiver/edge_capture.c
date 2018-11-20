@@ -8,9 +8,9 @@
 #include <machine/cint.h>
 
 #define DEGLITCH_TIME_PERCENT		10
-#define	DEGLITCH_TIME_ABSOLUTE		(BIT_TX_PERIOD / 100) * DEGLITCH_TIME_PERCENT
+#define	DEGLITCH_TIME_ABSOLUTE		(bit_tx_period / 100) * DEGLITCH_TIME_PERCENT
 
-void edge_capture_init(void) {
+void edge_capture_timer_init(void) {
 	/* Enable CMU_CLK0
 	 * CMU_CLK0 = GCLK
 	 */
@@ -37,5 +37,11 @@ void edge_capture_init(void) {
 	/* Enable service request */
 	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRE = 0b1;
 	_install_int_handler(ISR_PN_EDGE_CAPTURE, (void (*) (int))ISR_edge_capture, 0);
+}
+
+
+inline void edge_capture_timer_update(void) {
+	GTM_TIM0_CH0_FLT_RE.B.FLT_RE = DEGLITCH_TIME_ABSOLUTE;
+	GTM_TIM0_CH0_FLT_FE.B.FLT_FE = DEGLITCH_TIME_ABSOLUTE;
 }
 

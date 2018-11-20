@@ -14,31 +14,27 @@
 #define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
 
 typedef struct txd_t {
-	uint16_t buf[FRAME_LEN];
+	uint16_t buf[SUBFRAME_LEN_MAX];
 	uint16_t idx;
 	uint8_t  rsh;
 } txd_t;
 
-typedef struct sws_t {
-	uint16_t buf[NUM_OF_SUBFRAMES];
-	uint8_t  idx;
-} sws_t;
 
-static sws_t sws = {{SW1, SW2, SW3, SW4}, 0};
+static uint8_t sws_idx = 0;
 static txd_t txd = {{0}, 0, 0};
 static uint16_t increment = 0;
 
 static inline void txd_init(void){
 	increment = 0;
-	sws.idx = 0;
+	sws_idx = 0;
 	txd.idx = 0;
-	txd.buf[txd.idx] = sws.buf[sws.idx];
+	txd.buf[txd.idx] = sync_words[sws_idx];
 	txd.rsh = 0;
 }
 
 
 void hbp_tx_init(void) {
-	pwm_init();
+	pwm_timer_init();
 	txd_init();
 }
 
@@ -75,11 +71,11 @@ void ISR_bit_tx(void) {
 		if(WORD_IS_PASSED) {
 			txd.rsh = 0;
 			if(txd.idx == 0) {
-				sws.idx = (sws.idx + 1) % NUM_OF_SUBFRAMES;
-				increment = sws.idx * (FRAME_LEN - 1);
+				sws_idx = (sws_idx + 1) % NUMBER_OF_SUBFRAMES;
+				increment = sws_idx * (SUBFRAME_LEN - 1);
 			}
-			txd.buf[txd.idx] = (txd.idx == 0) ? sws.buf[sws.idx] : increment++;
-			txd.idx = (txd.idx + 1) % FRAME_LEN;
+			txd.buf[txd.idx] = (txd.idx == 0) ? sync_words[sws_idx] : increment++;
+			txd.idx = (txd.idx + 1) % SUBFRAME_LEN;
 		}
 		else {
 			txd.rsh++;

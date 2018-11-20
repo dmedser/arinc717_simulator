@@ -5,10 +5,10 @@
 #include "global_cfg.h"
 #include <Platform_Types.h>
 
-#define SW1_REVERSED				0xE2400000
-#define SW2_REVERSED				0x1DA00000
-#define SW3_REVERSED				0xE2500000
-#define SW4_REVERSED				0x1DB00000
+#define SW1_REVERSED				sync_words_reversed[0]
+#define SW2_REVERSED				sync_words_reversed[1]
+#define SW3_REVERSED				sync_words_reversed[2]
+#define SW4_REVERSED				sync_words_reversed[3]
 
 #define SW_MASK						0xFFF00000
 
@@ -17,7 +17,7 @@
 #define SW3_CAPTURED				((bitstream.bits & SW_MASK) == SW3_REVERSED)
 #define SW4_CAPTURED				((bitstream.bits & SW_MASK) == SW4_REVERSED)
 
-#define ADJACENT_SWS_LOST			((bitstream.counter - last_adjacent_sws_stamp) > BITRATE_BPS)
+#define ADJACENT_SWS_LOST			((bitstream.counter - last_adjacent_sws_stamp) > bitrate_bps)
 
 #define ADJACENT_SW12_CAPTURED		0
 #define ADJACENT_SW23_CAPTURED		1
@@ -63,7 +63,7 @@ static boolean find_adjacent_sws(void) {
 
 	for(; i < sw_stamps.idx; i++) {
 
-		if((bitstream.counter - sw_stamps.buf[i]) == BITRATE_BPS) {
+		if((bitstream.counter - sw_stamps.buf[i]) == bitrate_bps) {
 			return SUCCESS;
 		}
 

@@ -176,23 +176,19 @@ void ISR_can_tx(void) {
 
 	/* Interrupts shouldn't be disabled here! */
 
-	#define idx_of_subframe_to_tx 					superframe.tx_idx
-	#define subframe_to_tx							superframe.subframes[idx_of_subframe_to_tx]
-	#define idx_of_word_to_tx 	  					subframe_to_tx.tx_idx
-	#define idx_of_subframe_to_rx					superframe.rx_idx
-	#define SUBFRAME_IS_TRANSMITTED					(idx_of_word_to_tx == FRAME_LEN)
-	#define NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME	1024
+	#define SUBFRAME_IS_TRANSMITTED	 (idx_of_word_to_tx == SUBFRAME_LEN)
 
 	if(SUBFRAME_IS_TRANSMITTED) {
 		idx_of_word_to_tx = 0;
 		idx_of_subframe_to_tx = idx_of_subframe_to_rx;
 	}
 	else {
-		uint64_t can_tx_msg_data = superframe.get_8_bytes_from(&subframe_to_tx);
+		uint64_t can_tx_msg_data = frame.get_8_bytes_from(&subframe_to_tx);
 
-		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0)) << 12 |
-							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4)) << (28 - 4) |
-							   	   	   	  (uint64_t)(can_tx_msg_id & (0x3 << 8)) << (44 - 8);
+		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
+							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
+							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
+							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
 
 		can_tx_msg_data |= can_tx_msg_id_splitted;
 
@@ -200,10 +196,8 @@ void ISR_can_tx(void) {
 
 		idx_of_word_to_tx += 4;
 
-		/* TEST */
-		//can_tx_msg_id = (can_tx_msg_id == CAN_TX_MSG_ID_END) ? CAN_TX_MSG_ID_START : (can_tx_msg_id + 1);
+		can_tx_msg_id++;
 
-		can_tx_msg_id = (can_tx_msg_id + 1) % NUMBER_OF_CAN_MESSAGES_IN_SUPERFRAME;
 	}
 
 }

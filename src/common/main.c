@@ -4,7 +4,6 @@
 #include "scu_clk_cfg.h"
 #include "gtm.h"
 #include "can.h"
-//#include "rtos.h"
 #include "hbp_tx.h"
 #include "hbp_rx.h"
 #include "ports.h"
@@ -25,15 +24,21 @@ int main(void) {
 
 	gtm_init();
 
-	can_init();
-
-	//rtos_init();
-
 	#if(OP_MODE == TRANSMITTER)
+
 	hbp_tx_init();
+
 	#else
+
+	download_from_dflash(BITRATE);
+
+	download_from_dflash(SYNC_WORDS);
+
 	hbp_rx_init();
+
 	#endif
+
+	can_init();
 
 	ports_init();
 

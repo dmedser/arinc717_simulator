@@ -7,9 +7,9 @@
 #include <IfxSrc_reg.h>
 #include <machine/cint.h>
 
-#define PWM_PERIOD		BIT_TX_PERIOD
+#define PWM_PERIOD	bit_tx_period
 
-void pwm_init(void) {
+void pwm_timer_init(void) {
 	/* Enable FXCLK */
 	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
@@ -31,6 +31,12 @@ void pwm_init(void) {
 
 	/* Apply the updates */
 	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;
+}
+
+
+inline void pwm_timer_update(void) {
+	GTM_TOM0_CH12_SR0.B.SR0 = PWM_PERIOD;
+	GTM_TOM0_CH12_SR1.B.SR1 = PWM_PERIOD / 2;
 }
 
 

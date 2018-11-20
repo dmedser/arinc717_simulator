@@ -10,10 +10,10 @@
 #include <machine/cint.h>
 
 #define GLITCH_RESOLUTION		1000
-#define GLITCH_TIME_UNIT		(BIT_TX_PERIOD / GLITCH_RESOLUTION)
+#define GLITCH_TIME_UNIT		(bit_tx_period / GLITCH_RESOLUTION)
 #define GLITCH_DURATION			(GLITCH_TIME_UNIT * 2)
 #define GLITCH_START_MIN		GLITCH_DURATION
-#define GLITCH_START_MAX		(BIT_TX_PERIOD - (2 * GLITCH_DURATION))
+#define GLITCH_START_MAX		(bit_tx_period - (2 * GLITCH_DURATION))
 
 static uint16_t range_rand(uint16_t range) {
 	return abs(rand() % (range + 1));
@@ -21,18 +21,18 @@ static uint16_t range_rand(uint16_t range) {
 
 
 inline void gg_update(void) {
-	uint16_t raw_rand = range_rand(BIT_TX_PERIOD);
+	uint16_t raw_rand = range_rand(bit_tx_period);
 	uint16_t tuned_rand = (raw_rand < GLITCH_START_MIN) ? GLITCH_START_MIN :
 						  ((raw_rand > GLITCH_START_MAX) ? GLITCH_START_MAX : raw_rand);
 
-	if(tuned_rand <= (BIT_TX_PERIOD / 2)) {
-		if(tuned_rand > ((BIT_TX_PERIOD / 2) - (2 * GLITCH_DURATION))) {
-			tuned_rand = (BIT_TX_PERIOD / 2) - (2 * GLITCH_DURATION);
+	if(tuned_rand <= (bit_tx_period / 2)) {
+		if(tuned_rand > ((bit_tx_period / 2) - (2 * GLITCH_DURATION))) {
+			tuned_rand = (bit_tx_period / 2) - (2 * GLITCH_DURATION);
 		}
 	}
 	else {
-		if(tuned_rand < ((BIT_TX_PERIOD / 2) + (2 * GLITCH_DURATION))) {
-			tuned_rand = (BIT_TX_PERIOD / 2) + (2 * GLITCH_DURATION);
+		if(tuned_rand < ((bit_tx_period / 2) + (2 * GLITCH_DURATION))) {
+			tuned_rand = (bit_tx_period / 2) + (2 * GLITCH_DURATION);
 		}
 	}
 
