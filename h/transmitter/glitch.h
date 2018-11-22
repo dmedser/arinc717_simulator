@@ -3,10 +3,10 @@
 #ifndef GLITCH_H_
 #define GLITCH_H_
 
-void gg_init(void);
-inline void gg_update(void);
-inline void gg_on(void);
-inline void gg_off_reset(void);
+void glitch_timer_init(void);
+inline void gt_update(void);
+inline void gt_on(void);
+inline void gt_off_reset(void);
 void ISR_glitch(void);
 
 #endif /* GLITCH_H_ */

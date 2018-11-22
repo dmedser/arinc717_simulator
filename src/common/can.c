@@ -41,6 +41,13 @@ static uint16_t can_tx_msg_id = 0;
 #endif
 
 void can_init(void) {
+
+	/* Прием сообщений по  CAN  осуществляют  как  симулятор  ARINC  передатчика
+	 * так и  ARINC  приемник (установка значений битрейта и синхрослов, а также
+	 * запуск потока бит). Передачу сообщений по CAN  осуществляет только  ARINC
+	 * приемник (преобразование данных, получаемых по шине ARINC в CAN сообщения)
+	 */
+
 	/* CAN */
 	IfxMultican_Can_Config can_cfg;
 
@@ -55,12 +62,12 @@ void can_init(void) {
 	/* Default settings */
 	IfxMultican_Can_Node_initConfig(&can_node_cfg, &can);
 
-	can_node_cfg.baudrate 					= 500000; 						/* 500 kBit/sec */
-	can_node_cfg.nodeId						= IfxMultican_NodeId_0;
-	can_node_cfg.rxPin 						= &IfxMultican_RXD0A_P02_1_IN;
-	can_node_cfg.txPin 						= &IfxMultican_TXD0_P02_0_OUT;
-	can_node_cfg.rxPinMode					= IfxPort_InputMode_pullUp;
-	can_node_cfg.txPinMode 					= IfxPort_OutputMode_pushPull;
+	can_node_cfg.baudrate 	= 500000; 						/* 500 kBit/sec */
+	can_node_cfg.nodeId		= IfxMultican_NodeId_0;
+	can_node_cfg.rxPin 		= &IfxMultican_RXD0A_P02_1_IN;
+	can_node_cfg.txPin 		= &IfxMultican_TXD0_P02_0_OUT;
+	can_node_cfg.rxPinMode	= IfxPort_InputMode_pullUp;
+	can_node_cfg.txPinMode 	= IfxPort_OutputMode_pushPull;
 
 	IfxMultican_Can_Node_init(&can_node, &can_node_cfg);
 
@@ -96,18 +103,17 @@ void can_init(void) {
 	}
 
 	/* CAN receive interrupt */
-	/* Service request priority number */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX;
-	/* Enable service request */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE = 0b1;
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX; 	/* Service request priority number */
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE  = 0b1;			 	/* Enable service request */
 	_install_int_handler(ISR_PN_CAN_RX, (void (*) (int))ISR_can_rx, 0);
 
 	#if(OP_MODE == RECEIVER)
 	/* CAN transmit interrupt */
-	/* Service request priority number */
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;
-	/* Enable service request */
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE = 0b1;
+
+	/* Обработка CAN TX прерывания по вызову General Purpose Service Request 1 */
+
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;		/* Service request priority number */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE  = 0b1;				/* Enable service request */
 	_install_int_handler(ISR_PN_CAN_TX, (void (*) (int))ISR_can_tx, 0);
 	#endif
 }
@@ -138,6 +144,19 @@ void ISR_can_rx(void) {
 
 	IfxCpu_forceDisableInterrupts();
 
+	/* CAN сообщение 	  - байты 1-8 слева направо
+	 * Байт CAN сообщения - биты  7-0 слева направо
+	 *
+	 * uint32_t data_low  - байты CAN сообщения 1-4 - слова 1-2
+	 * uint32_t data_high - байты CAN сообщения 5-8 - слова 3-4
+	 *
+	 * Байты CAN сообщения  |  слово  |  биты data_high / data_low
+	 *        1-2           |    1	  |      31-16 (data_high)
+	 * 		  3-4			|    2    |      15-0  (data_high)
+	 * 		  5-6			|    3    |      31-16 (data_low)
+	 * 		  7-8			|    4    |      15-0  (data_low)
+	 */
+
 	IfxMultican_Message rx_msg;
 
 	IfxMultican_Can_MsgObj_readMessage(&can_dst_mo, &rx_msg);
@@ -147,16 +166,16 @@ void ISR_can_rx(void) {
 
 	if(rx_msg.id == CAN_DST_MO_MSG_ID) {
 
-		/* Номер параметра содержится в старших битах 31-28
-		 * переменной data_high */
+		/* Номер параметра содержится в 4-м слове входящего CAN
+		 * сообщения (биты 15-12) */
 
 		parameter_idx parameter = (parameter_idx)((data_high >> 12) & 0x0F);
 
 		switch(parameter) {
 			case BITRATE: {
 
-				/* Значение битрейта содержится старшем
-				 * слове (биты 31-16) переменной data_low */
+				/* Значение битрейта содержится в 1-м слове
+				 * входящего CAN сообщения (биты 31-16) */
 
 				update_bitrate_bps((uint16_t)(data_low >> 16));
 
@@ -178,8 +197,8 @@ void ISR_can_rx(void) {
 			}
 			case SYNC_WORDS: {
 
-				/* Значения синхрослов содержатся в младших битах (11-0)
-				 * каждого слова входящего CAN сообщения:
+				/* Значения синхрослов содержатся в младших битах
+				 * (11-0) каждого слова входящего  CAN  сообщения:
 				 *
 				 * CAN байты: | Синхрослова:
 				 *   1 - 2    |      1
@@ -209,7 +228,11 @@ void ISR_can_rx(void) {
 				start_hbp_tx();
 
 				/* TEST */
-				/* Disable CAN RX interrupts for transmitter */
+				/* После старта генерации  HBP  сигнала  необходимо  отключить  CAN  RX  прерывания
+				 * для симулятора ARINC передатчика, т.к. обработка этих прерываний (ARINC приемник
+				 * после  синхронизации  с  потоком  бит  начнет  его  ретрансляцию  по  CAN) будет
+				 * накладываться на процесс генерации HBP сигнала, что приводит к его искажению */
+
 				MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b0;
 
 				break;
@@ -238,13 +261,23 @@ void ISR_can_tx(void) {
 	}
 	else {
 		uint64_t can_tx_msg_data = frame.get_8_bytes_from(&subframe_to_tx);
+
+		/* Каждое 12-разрядное слово протокола ARINC хранится в 16-разрядной переменной,
+		 * т.о. в  исходящем CAN сообщении  (8  байт = 4  16-разрядных слова)  остаются
+		 * неиспользуемыми старшие биты 15-12 каждого слова. Используем их для хранения
+		 * уникального ID каждого исходящего CAN сообщения */
+
 		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
+
 		can_tx_msg_data |= can_tx_msg_id_splitted;
+
 		can_tx(RECEIVER_CAN_ID, can_tx_msg_data);
+
 		idx_of_word_to_tx += 4;
+
 		can_tx_msg_id++;
 	}
 

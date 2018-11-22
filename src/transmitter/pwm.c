@@ -9,12 +9,16 @@
 
 #define PWM_PERIOD	bit_tx_period
 
+/* PWM таймер используется для генерации прерываний на каждый
+ * период и полупериод  передачи  бита для заданного битрейта
+ */
+
 void pwm_timer_init(void) {
-	/* Enable FXCLK */
-	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
+	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;  /* Enable FXCLK */
 
 	GTM_TOM0_TGC1_FUPD_CTRL.B.FUPD_CTRL4 = 0b10;
 	GTM_TOM0_TGC1_GLB_CTRL.B.UPEN_CTRL4  = 0b10;
+
 	GTM_TOM0_CH12_SR0.B.SR0 = PWM_PERIOD;
 	GTM_TOM0_CH12_SR1.B.SR1 = PWM_PERIOD / 2;
 	GTM_TOM0_CH12_CN0.B.CN0 = 0;
@@ -23,14 +27,11 @@ void pwm_timer_init(void) {
 	GTM_TOM0_CH12_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
 	GTM_TOM0_CH12_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
-	/* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_BIT_TX_PWM;
-	/* Enable service request */
-	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE = 0b1;
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_BIT_TX_PWM;  /* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE  = 0b1;				 /* Enable service request */
 	_install_int_handler(ISR_PN_BIT_TX_PWM, (void (*) (int))ISR_bit_tx, 0);
 
-	/* Apply the updates */
-	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;
+	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;  /* Apply the updates */
 }
 
 

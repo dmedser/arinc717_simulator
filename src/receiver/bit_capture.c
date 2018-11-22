@@ -6,9 +6,14 @@
 #include <IfxSrc_reg.h>
 #include <machine/cint.h>
 
+/* Таймер захвата  бит  используется для определения значений принимаемых
+ * бит, а также  диагностики  битрейта  за  счет  измерения  длительности
+ * "короткого" и "длинного" периодов между соседними фронтами сигнала HBP,
+ * см. документацию
+ */
+
 void bit_capture_timer_init(void) {
-	/* Enable FXCLK */
-	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
+	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;  /* Enable all FXCLK */
 
 	GTM_TOM0_TGC0_FUPD_CTRL.B.FUPD_CTRL0 = 0b10;
 	GTM_TOM0_TGC0_GLB_CTRL.B.UPEN_CTRL0  = 0b10;
@@ -18,14 +23,11 @@ void bit_capture_timer_init(void) {
 
 	GTM_TOM0_CH0_IRQ_EN.B.CCU0TC_IRQ_EN  = 0b1;
 
-	/* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_BIT_TX_TIMEOUT;
-	/* Enable service request */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE = 0b1;
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_BIT_TX_TIMEOUT;  /* Service request priority number */
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE  = 0b1;					 /* Enable service request */
 	_install_int_handler(ISR_PN_BIT_TX_TIMEOUT, (void (*) (int))ISR_bit_tx_timeout, 0);
 
-	/* Apply the updates */
-	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
+	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;  /* Apply the updates */
 }
 
 
@@ -54,3 +56,4 @@ inline void bct_reset(void) {
 uint16_t get_bct_value(void) {
 	return (uint16_t)GTM_TOM0_CH0_CN0.B.CN0;
 }
+

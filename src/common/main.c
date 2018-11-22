@@ -31,9 +31,13 @@ int main(void) {
 	download_from_dflash(SYNC_WORDS);
 
 	#if(OP_MODE == TRANSMITTER)
+
 	hbp_tx_init();
+
 	#else
+
 	hbp_rx_init();
+
 	#endif
 
 	can_init();
@@ -44,6 +48,5 @@ int main(void) {
 
 	while(1);
 
-	return 0;
 }
 

@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <Platform_Types.h>
 
+/* ARINC кадр состоит из 4-х подкадров, каждый из которых содержит
+ * 64-1024 (в зависимости от битрейта) 12-разрядного слова */
+
 typedef struct subframe_t {
 	uint16_t buf[SUBFRAME_LEN_MAX];
 	uint16_t tx_idx;						/* Transmit to CAN */
@@ -20,6 +23,11 @@ typedef struct frame_t {
 	boolean (*is_empty)(void);
 	uint64_t (*get_8_bytes_from)(subframe_t *subframe);
 } frame_t;
+
+
+/* Переменная  потока  бит представляет  собой  структуру  с  32-разрядным
+ * полем bits, в которое помещаются и сдвигаются справа налево принимаемые
+ * биты, а также счетчиком, который содержит количество принятых бит */
 
 typedef struct bitstream_t {
 	uint32_t bits;

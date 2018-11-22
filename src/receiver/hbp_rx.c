@@ -10,7 +10,6 @@
 static boolean frame_is_empty(void);
 static uint64_t frame_get_8_bytes_from(subframe_t *subframe);
 static void bitstream_put_2_decoded_words_into(subframe_t *subframe);
-/*static void bitstream_put_2_raw_words_into(subframe_t *subframe);*/
 
 static boolean first_edge = TRUE;
 static uint32_t frame_bit_counter = 0;
@@ -22,7 +21,6 @@ frame_t frame = {{{{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}}, 0,	0,
 bitstream_t bitstream = {0, 0, bitstream_put_2_decoded_words_into};
 
 static boolean frame_is_empty(void) {
-
 	return (idx_of_subframe_to_rx == idx_of_subframe_to_tx) &&
 		   ((idx_of_word_to_rx - idx_of_word_to_tx) < NUMBER_OF_WORDS_IN_CAN_MSG);
 }
@@ -63,15 +61,6 @@ void hbp_rx_init(void) {
 	edge_capture_timer_init();
 	bit_capture_timer_init();
 }
-
-
-/*static void bitstream_put_2_raw_words_into(frame_t *frame) {
-	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
-	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
-
-	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_31_20(bitstream.bits) >> 20);
-	frame->buf[frame->rx_idx++] = (uint16_t)(BITS_19_8(bitstream.bits) >> 8);
-}*/
 
 
 static inline void bitrate_error_handling(void) {
