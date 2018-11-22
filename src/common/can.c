@@ -62,7 +62,7 @@ void can_init(void) {
 	/* Default settings */
 	IfxMultican_Can_Node_initConfig(&can_node_cfg, &can);
 
-	can_node_cfg.baudrate   = 500000; 						/* 500 kBit/sec */
+	can_node_cfg.baudrate   = 500000;                      /* 500 kBit/sec */
 	can_node_cfg.nodeId     = IfxMultican_NodeId_0;
 	can_node_cfg.rxPin      = &IfxMultican_RXD0A_P02_1_IN;
 	can_node_cfg.txPin      = &IfxMultican_TXD0_P02_0_OUT;
@@ -120,7 +120,7 @@ void can_init(void) {
 
 
 static uint32_t swap_endianness(uint32_t value) {
-	return ((value & ((uint32_t)0xFF << 0))  << 24) |
+    return ((value & ((uint32_t)0xFF << 0))  << 24) |
            ((value & ((uint32_t)0xFF << 8))  << 8)  |
            ((value & ((uint32_t)0xFF << 16)) >> 8)  |
            ((value & ((uint32_t)0xFF << 24)) >> 24);
@@ -267,7 +267,7 @@ void ISR_can_tx(void) {
 		 * неиспользуемыми старшие биты 15-12 каждого слова. Используем их для хранения
 		 * уникального ID каждого исходящего CAN сообщения */
 
-		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
+        uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
