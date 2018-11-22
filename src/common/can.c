@@ -1,9 +1,8 @@
 /* Author: t.me/dmedser */
 
 #include "can.h"
-#include "hbp_tx.h"
-#include "hbp_rx.h"
 #include "isr_priorities.h"
+#include "dflash.h"
 #include <IfxMultican_Can.h>
 #include <IfxSrc_reg.h>
 #include <stdint.h>
@@ -11,9 +10,18 @@
 #include <machine/cint.h>
 
 #if(OP_MODE == TRANSMITTER)
-	#define CAN_DST_MO_MSG_ID   TRANSMITTER_ID
+#include "hbp_tx.h"
+#include "pwm.h"
 #else
-	#define CAN_DST_MO_MSG_ID	RECEIVER_ID
+#include "hbp_rx.h"
+#include "bit_capture.h"
+#include "edge_capture.h"
+#endif
+
+#if(OP_MODE == TRANSMITTER)
+	#define CAN_DST_MO_MSG_ID   TRANSMITTER_CAN_ID
+#else
+	#define CAN_DST_MO_MSG_ID	RECEIVER_CAN_ID
 #endif
 
 /* CAN handle */
@@ -53,8 +61,6 @@ void can_init(void) {
 	can_node_cfg.txPin 						= &IfxMultican_TXD0_P02_0_OUT;
 	can_node_cfg.rxPinMode					= IfxPort_InputMode_pullUp;
 	can_node_cfg.txPinMode 					= IfxPort_OutputMode_pushPull;
-	can_node_cfg.transferInterrupt.enabled	= 0b1;
-	can_node_cfg.transferInterrupt.srcId	= IfxMultican_SrcId_0;
 
 	IfxMultican_Can_Node_init(&can_node, &can_node_cfg);
 
@@ -83,7 +89,7 @@ void can_init(void) {
 		can_dst_mo_cfg.msgObjId				= 1;
 		can_dst_mo_cfg.messageId			= CAN_DST_MO_MSG_ID;
 		can_dst_mo_cfg.frame				= IfxMultican_Frame_receive;
-		can_dst_mo_cfg.rxInterrupt.srcId	= IfxMultican_SrcId_0;
+		can_dst_mo_cfg.rxInterrupt.srcId	= IfxMultican_SrcId_1;
 		can_dst_mo_cfg.rxInterrupt.enabled  = TRUE;
 
 		IfxMultican_Can_MsgObj_init(&can_dst_mo, &can_dst_mo_cfg);
@@ -91,9 +97,9 @@ void can_init(void) {
 
 	/* CAN receive interrupt */
 	/* Service request priority number */
-	MODULE_SRC.CAN.CAN[0].INT[0].B.SRPN = ISR_PN_CAN_RX;
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX;
 	/* Enable service request */
-	MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b1;
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE = 0b1;
 	_install_int_handler(ISR_PN_CAN_RX, (void (*) (int))ISR_can_rx, 0);
 
 	#if(OP_MODE == RECEIVER)
@@ -129,38 +135,93 @@ static void can_tx(uint32_t id, uint64_t data) {
 
 
 void ISR_can_rx(void) {
+
+	IfxCpu_forceDisableInterrupts();
+
 	IfxMultican_Message rx_msg;
 
 	IfxMultican_Can_MsgObj_readMessage(&can_dst_mo, &rx_msg);
 
+	uint32_t data_high = swap_endianness(rx_msg.data[1]);
+	uint32_t data_low  = swap_endianness(rx_msg.data[0]);
+
 	if(rx_msg.id == CAN_DST_MO_MSG_ID) {
+
+		/* Номер параметра содержится в старших битах 31-28
+		 * переменной data_high */
+
+		parameter_idx parameter = (parameter_idx)((data_high >> 12) & 0x0F);
+
+		switch(parameter) {
+			case BITRATE: {
+
+				/* Значение битрейта содержится старшем
+				 * слове (биты 31-16) переменной data_low */
+
+				update_bitrate_bps((uint16_t)(data_low >> 16));
+
+				#if(OP_MODE == TRANSMITTER)
+
+				pwm_timer_update();
+
+				#else
+
+				edge_capture_timer_update();
+
+				bit_capture_timer_update();
+
+				#endif
+
+				upload_into_dflash(BITRATE);
+
+				break;
+			}
+			case SYNC_WORDS: {
+
+				/* Значения синхрослов содержатся в младших битах (11-0)
+				 * каждого слова входящего CAN сообщения:
+				 *
+				 * CAN байты: | Синхрослова:
+				 *   1 - 2    |      1
+				 *   3 - 4	  |      2
+				 *   5 - 6    |      3
+				 *   7 - 8    |      4
+				 */
+
+				uint64_t words = ((uint64_t)data_low << 32) | (uint64_t)data_high;
+
+				uint8_t i = 0;
+				for(; i < NUMBER_OF_SUBFRAMES; i++) {
+					update_sync_word(i, ((uint16_t)(words >> (48 - 16 * i)) & 0x0FFF));
+				}
+
+				upload_into_dflash(SYNC_WORDS);
+
+				break;
+			}
+
 		#if(OP_MODE == TRANSMITTER)
-		uint32_t data_high = swap_endianness(rx_msg.data[0]);
 
-		uint8_t received_opcode = (uint8_t)(data_high >> 24);
+			#define START_HBP_TX 2
 
-		#define START	0xFF
-		#define STOP	0x01
+			case START_HBP_TX: {
 
-		switch(received_opcode) {
-		case START:
-			start_hbp_tx();
+				start_hbp_tx();
 
-			/* TEST */
-			/* Disable CAN RX interrupts for transmitter */
-			MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b0;
+				/* TEST */
+				/* Disable CAN RX interrupts for transmitter */
+				MODULE_SRC.CAN.CAN[0].INT[0].B.SRE = 0b0;
 
-			break;
-		case STOP:
-			stop_hbp_tx();
-			break;
-		}
-		#else
-
-		/* Receiver CAN RX interrupt routine */
+				break;
+			}
 
 		#endif
+
+		}
 	}
+
+	IfxCpu_enableInterrupts();
+
 }
 
 
@@ -182,7 +243,7 @@ void ISR_can_tx(void) {
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
 							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
 		can_tx_msg_data |= can_tx_msg_id_splitted;
-		can_tx(RECEIVER_ID, can_tx_msg_data);
+		can_tx(RECEIVER_CAN_ID, can_tx_msg_data);
 		idx_of_word_to_tx += 4;
 		can_tx_msg_id++;
 	}

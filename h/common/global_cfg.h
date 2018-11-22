@@ -25,10 +25,10 @@
 #define SUBFRAME_LEN_MAX					(BITRATE_BPS_MAX / BITS_IN_WORD)
 #define NUMBER_OF_SUBFRAMES					4
 
-#define TRANSMITTER_ID						0x601
-#define RECEIVER_ID							0x602
+#define TRANSMITTER_CAN_ID					0x601
+#define RECEIVER_CAN_ID						0x602
 
-typedef uint8_t param_no;
+typedef uint8_t parameter_idx;
 
 #define BITRATE								0
 #define SYNC_WORDS							1
@@ -44,6 +44,7 @@ extern uint16_t bitrate_bps;
 extern uint16_t bit_tx_period;
 extern uint16_t sync_words[NUMBER_OF_SUBFRAMES];
 extern uint32_t sync_words_reversed[NUMBER_OF_SUBFRAMES];
+
 
 void update_sync_word(uint8_t idx, uint16_t value);
 void update_bitrate_bps(uint16_t value);

@@ -54,4 +54,3 @@ inline void bct_reset(void) {
 uint16_t get_bct_value(void) {
 	return (uint16_t)GTM_TOM0_CH0_CN0.B.CN0;
 }
-

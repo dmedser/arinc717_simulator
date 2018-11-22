@@ -2,30 +2,25 @@
 
 #include "gtm.h"
 #include <IfxGtm.h>
-#include <IfxScuCcu.h>
+#include <IfxGtm_Cmu.h>
 
-/* fGTM  = fPLL / GTMDIV
- * fPLL = 200 MHz
- * Target fGTM = 50 MHz */
+#define GCLK_FREQUENCY	40000000 /* 40 MHz */
 
-uint32_t f_gtm = 0;
+/* fGCLK  = (fSRC / GTMDIV) * (GCLK_DEN / GCLK_NUM)
+ * fSRC   by default = fPLL = IFX_CFG_SCU_PLL_FREQUENCY = 200 MHz
+ * GTMDIV by default = 2
+ * GCLK_DEN необходимо принять за числитель, а GCLK_NUM за знаменатель
+ * Проектная частота fGCLK = GCLK_FREQUENCY */
+
+uint32_t f_gclk = 0;
 
 void gtm_init(void) {
 	Ifx_GTM *gtm = &MODULE_GTM;
+
 	IfxGtm_enable(gtm);
 
-	Ifx_SCU_CCUCON1 ccucon1 = SCU_CCUCON1;
-	uint16_t password = IfxScuWdt_getSafetyWatchdogPassword();
+	IfxGtm_Cmu_setGclkFrequency(gtm, GCLK_FREQUENCY);
 
-	/* Disable TRAP for SMU (oscillator watchdog and unlock detection) */
-	IfxScuWdt_clearSafetyEndinit(password);
-
-	ccucon1.B.GTMDIV = 4U;
-	ccucon1.B.UP     = 1U;
-	SCU_CCUCON1.U    = ccucon1.U;
-
-	IfxScuWdt_setSafetyEndinit(password);
-
-	f_gtm = IfxScuCcu_getGtmFrequency();
+	f_gclk = (uint32_t)IfxGtm_Cmu_getGclkFrequency(gtm);
 }
 

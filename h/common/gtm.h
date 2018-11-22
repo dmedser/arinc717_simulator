@@ -7,6 +7,6 @@
 
 void gtm_init(void);
 
-extern uint32_t f_gtm;
+extern uint32_t f_gclk;
 
 #endif /* GTM_H_ */

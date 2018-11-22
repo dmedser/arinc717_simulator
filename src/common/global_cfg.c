@@ -10,7 +10,7 @@ uint32_t sync_words_reversed[NUMBER_OF_SUBFRAMES] = {0};
 
 void update_bitrate_bps(uint16_t value) {
 	bitrate_bps = value;
-	bit_tx_period = (uint16_t)(f_gtm / bitrate_bps);
+	bit_tx_period = (uint16_t)(f_gclk / bitrate_bps);
 }
 
 

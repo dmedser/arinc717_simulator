@@ -45,8 +45,8 @@ static uint64_t dflash_rd_u64(uint32_t addr) {
 }
 
 
-void upload_into_dflash(param_no param) {
-	switch(param){
+void upload_into_dflash(parameter_idx parameter) {
+	switch(parameter){
 		case BITRATE: {
 			dflash_wr_u64(BITRATE_DFLASH_ADDRESS, (uint64_t)bitrate_bps);
 			break;
@@ -62,8 +62,8 @@ void upload_into_dflash(param_no param) {
 }
 
 
-void download_from_dflash(param_no param) {
-	switch(param){
+void download_from_dflash(parameter_idx parameter) {
+	switch(parameter){
 		case BITRATE: {
 			update_bitrate_bps((uint16_t)dflash_rd_u64(BITRATE_DFLASH_ADDRESS));
 			break;

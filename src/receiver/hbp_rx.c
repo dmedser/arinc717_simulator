@@ -115,7 +115,7 @@ void ISR_edge_capture(void) {
 
 			#define ALL_SYNC_FLAGS_ARE_SET				((sync_flags & SYNC_FLAGS_MASK) == SYNC_FLAGS_MASK)
 			#define NEW_2_WORDS_IN_BIT_STREAM_READY		((frame_bit_counter % (BITS_IN_WORD * 2)) == 0)
-			#define SUBFRAME_RECEIVED 					(frame_bit_counter == (bitrate_bps - 1))
+			#define SUBFRAME_RECEIVED 					(frame_bit_counter == (uint32_t)(bitrate_bps - 1))
 
 			if(ALL_SYNC_FLAGS_ARE_SET) {
 
@@ -154,7 +154,7 @@ void ISR_bit_tx_timeout(void) {
 	IfxCpu_forceDisableInterrupts();
 
 	/* Flag must be cleared manually */
-	GTM_TOM0_CH0_IRQ_NOTIFY.B.CCU0TC = 0b1;
+	GTM_TIM0_CH1_IRQ_NOTIFY.B.NEWVAL = 0b1;
 
 	bitrate_error_handling();
 

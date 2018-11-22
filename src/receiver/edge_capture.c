@@ -10,13 +10,10 @@
 #define DEGLITCH_TIME_PERCENT		10
 #define	DEGLITCH_TIME_ABSOLUTE		(bit_tx_period / 100) * DEGLITCH_TIME_PERCENT
 
+/* Generates NEWVAL_IRQ_EN on each edge excluding glitches */
 void edge_capture_timer_init(void) {
-	/* Enable CMU_CLK0
-	 * CMU_CLK0 = GCLK
-	 */
-	GTM_CMU_CLK_EN.B.EN_CLK0 = 0b10;
-
-	/* Generates NEWVAL_IRQ_EN on each edge excluding glitches */
+	GTM_CMU_CLK_EN.B.EN_CLK0        = 0b10;		/* Enable CMU_CLK0 = GCLK */
+	GTM_TIM0_CH0_CTRL.B.CLK_SEL     = 0b000;	/* Clock source for channel = CMU_CLK0 */
 	GTM_TIM0_CH0_CTRL.B.TIM_EN   	= 0b1;		/* Enable TIM0_0 */
 	GTM_TIM0_CH0_CTRL.B.TIM_MODE 	= 0b010;	/* TIM Input Event Mode (TIEM) */
 	GTM_TIM0_CH0_CTRL.B.ISL     	= 0b1;		/* Ignore DSL and treat both edges as active edge */
