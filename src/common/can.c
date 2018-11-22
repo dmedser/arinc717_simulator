@@ -21,7 +21,7 @@
 #if(OP_MODE == TRANSMITTER)
 	#define CAN_DST_MO_MSG_ID   TRANSMITTER_CAN_ID
 #else
-	#define CAN_DST_MO_MSG_ID	RECEIVER_CAN_ID
+	#define CAN_DST_MO_MSG_ID   RECEIVER_CAN_ID
 #endif
 
 /* CAN handle */
@@ -62,12 +62,12 @@ void can_init(void) {
 	/* Default settings */
 	IfxMultican_Can_Node_initConfig(&can_node_cfg, &can);
 
-	can_node_cfg.baudrate 	= 500000; 						/* 500 kBit/sec */
-	can_node_cfg.nodeId		= IfxMultican_NodeId_0;
-	can_node_cfg.rxPin 		= &IfxMultican_RXD0A_P02_1_IN;
-	can_node_cfg.txPin 		= &IfxMultican_TXD0_P02_0_OUT;
-	can_node_cfg.rxPinMode	= IfxPort_InputMode_pullUp;
-	can_node_cfg.txPinMode 	= IfxPort_OutputMode_pushPull;
+	can_node_cfg.baudrate   = 500000; 						/* 500 kBit/sec */
+	can_node_cfg.nodeId     = IfxMultican_NodeId_0;
+	can_node_cfg.rxPin      = &IfxMultican_RXD0A_P02_1_IN;
+	can_node_cfg.txPin      = &IfxMultican_TXD0_P02_0_OUT;
+	can_node_cfg.rxPinMode  = IfxPort_InputMode_pullUp;
+	can_node_cfg.txPinMode  = IfxPort_OutputMode_pushPull;
 
 	IfxMultican_Can_Node_init(&can_node, &can_node_cfg);
 
@@ -93,18 +93,18 @@ void can_init(void) {
 		/* Default settings */
 		IfxMultican_Can_MsgObj_initConfig(&can_dst_mo_cfg, &can_node);
 
-		can_dst_mo_cfg.msgObjId				= 1;
-		can_dst_mo_cfg.messageId			= CAN_DST_MO_MSG_ID;
-		can_dst_mo_cfg.frame				= IfxMultican_Frame_receive;
-		can_dst_mo_cfg.rxInterrupt.srcId	= IfxMultican_SrcId_1;
+		can_dst_mo_cfg.msgObjId             = 1;
+		can_dst_mo_cfg.messageId            = CAN_DST_MO_MSG_ID;
+		can_dst_mo_cfg.frame                = IfxMultican_Frame_receive;
+		can_dst_mo_cfg.rxInterrupt.srcId    = IfxMultican_SrcId_1;
 		can_dst_mo_cfg.rxInterrupt.enabled  = TRUE;
 
 		IfxMultican_Can_MsgObj_init(&can_dst_mo, &can_dst_mo_cfg);
 	}
 
 	/* CAN receive interrupt */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX; 	/* Service request priority number */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE  = 0b1;			 	/* Enable service request */
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX;    /* Service request priority number */
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE  = 0b1;              /* Enable service request */
 	_install_int_handler(ISR_PN_CAN_RX, (void (*) (int))ISR_can_rx, 0);
 
 	#if(OP_MODE == RECEIVER)
@@ -112,8 +112,8 @@ void can_init(void) {
 
 	/* Обработка CAN TX прерывания по вызову General Purpose Service Request 1 */
 
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;		/* Service request priority number */
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE  = 0b1;				/* Enable service request */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;     /* Service request priority number */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE  = 0b1;               /* Enable service request */
 	_install_int_handler(ISR_PN_CAN_TX, (void (*) (int))ISR_can_tx, 0);
 	#endif
 }
@@ -121,9 +121,9 @@ void can_init(void) {
 
 static uint32_t swap_endianness(uint32_t value) {
 	return ((value & ((uint32_t)0xFF << 0))  << 24) |
-		   ((value & ((uint32_t)0xFF << 8))  << 8)  |
-		   ((value & ((uint32_t)0xFF << 16)) >> 8)  |
-		   ((value & ((uint32_t)0xFF << 24)) >> 24);
+           ((value & ((uint32_t)0xFF << 8))  << 8)  |
+           ((value & ((uint32_t)0xFF << 16)) >> 8)  |
+           ((value & ((uint32_t)0xFF << 24)) >> 24);
 }
 
 
@@ -144,17 +144,17 @@ void ISR_can_rx(void) {
 
 	IfxCpu_forceDisableInterrupts();
 
-	/* CAN сообщение 	  - байты 1-8 слева направо
+	/* CAN сообщение      - байты 1-8 слева направо
 	 * Байт CAN сообщения - биты  7-0 слева направо
 	 *
 	 * uint32_t data_low  - байты CAN сообщения 1-4 - слова 1-2
 	 * uint32_t data_high - байты CAN сообщения 5-8 - слова 3-4
 	 *
 	 * Байты CAN сообщения  |  слово  |  биты data_high / data_low
-	 *        1-2           |    1	  |      31-16 (data_high)
-	 * 		  3-4			|    2    |      15-0  (data_high)
-	 * 		  5-6			|    3    |      31-16 (data_low)
-	 * 		  7-8			|    4    |      15-0  (data_low)
+	 *        1-2           |    1    |      31-16 (data_high)
+	 *        3-4           |    2    |      15-0  (data_high)
+	 *        5-6           |    3    |      31-16 (data_low)
+	 *        7-8           |    4    |      15-0  (data_low)
 	 */
 
 	IfxMultican_Message rx_msg;
@@ -202,7 +202,7 @@ void ISR_can_rx(void) {
 				 *
 				 * CAN байты: | Синхрослова:
 				 *   1 - 2    |      1
-				 *   3 - 4	  |      2
+				 *   3 - 4    |      2
 				 *   5 - 6    |      3
 				 *   7 - 8    |      4
 				 */
@@ -268,9 +268,9 @@ void ISR_can_tx(void) {
 		 * уникального ID каждого исходящего CAN сообщения */
 
 		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
-							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
-							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
-							   	   	   	  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
+                                          (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
+                                          (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
+                                          (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
 
 		can_tx_msg_data |= can_tx_msg_id_splitted;
 
