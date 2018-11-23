@@ -18,6 +18,8 @@
 #include "edge_capture.h"
 #endif
 
+#define CAN_BAUDRATE_BPS        500000  /* 500 kBit/sec */
+
 #if(OP_MODE == TRANSMITTER)
 	#define CAN_DST_MO_MSG_ID   TRANSMITTER_CAN_ID
 #else
@@ -62,7 +64,7 @@ void can_init(void) {
 	/* Default settings */
 	IfxMultican_Can_Node_initConfig(&can_node_cfg, &can);
 
-	can_node_cfg.baudrate   = 500000;                      /* 500 kBit/sec */
+	can_node_cfg.baudrate   = CAN_BAUDRATE_BPS;
 	can_node_cfg.nodeId     = IfxMultican_NodeId_0;
 	can_node_cfg.rxPin      = &IfxMultican_RXD0A_P02_1_IN;
 	can_node_cfg.txPin      = &IfxMultican_TXD0_P02_0_OUT;
@@ -103,8 +105,8 @@ void can_init(void) {
 	}
 
 	/* CAN receive interrupt */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX;    /* Service request priority number */
-	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE  = 0b1;              /* Enable service request */
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRPN = ISR_PN_CAN_RX;
+	MODULE_SRC.CAN.CAN[0].INT[1].B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_CAN_RX, (void (*) (int))ISR_can_rx, 0);
 
 	#if(OP_MODE == RECEIVER)
@@ -112,15 +114,15 @@ void can_init(void) {
 
 	/* Обработка CAN TX прерывания по вызову General Purpose Service Request 1 */
 
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;     /* Service request priority number */
-	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE  = 0b1;               /* Enable service request */
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRPN = ISR_PN_CAN_TX;
+	MODULE_SRC.GPSR.GPSR[0].SR1.B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_CAN_TX, (void (*) (int))ISR_can_tx, 0);
 	#endif
 }
 
 
 static uint32_t swap_endianness(uint32_t value) {
-    return ((value & ((uint32_t)0xFF << 0))  << 24) |
+	return ((value & ((uint32_t)0xFF << 0))  << 24) |
            ((value & ((uint32_t)0xFF << 8))  << 8)  |
            ((value & ((uint32_t)0xFF << 16)) >> 8)  |
            ((value & ((uint32_t)0xFF << 24)) >> 24);
@@ -267,7 +269,7 @@ void ISR_can_tx(void) {
 		 * неиспользуемыми старшие биты 15-12 каждого слова. Используем их для хранения
 		 * уникального ID каждого исходящего CAN сообщения */
 
-        uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
+		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
                                           (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);

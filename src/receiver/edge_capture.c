@@ -18,25 +18,25 @@
  */
 
 void edge_capture_timer_init(void) {
-	GTM_CMU_CLK_EN.B.EN_CLK0        = 0b10;		/* Enable CMU_CLK0 = GCLK */
-	GTM_TIM0_CH0_CTRL.B.CLK_SEL     = 0b000;	/* Clock source for channel = CMU_CLK0 */
-	GTM_TIM0_CH0_CTRL.B.TIM_EN   	= 0b1;		/* Enable TIM0_0 */
-	GTM_TIM0_CH0_CTRL.B.TIM_MODE 	= 0b010;	/* TIM Input Event Mode (TIEM) */
-	GTM_TIM0_CH0_CTRL.B.ISL     	= 0b1;		/* Ignore DSL and treat both edges as active edge */
-	GTM_TIM0_CH0_CTRL.B.FLT_EN		= 0b1;		/* Enable FLT */
-	GTM_TIM0_CH0_CTRL.B.FLT_CNT_FRQ = 0b00;		/* FLT_CNT counts with CMU_CLK0 = 50 MHz */
-	GTM_TIM0_CH0_CTRL.B.FLT_MODE_RE = 0b1;		/* Individual de-glitch mode */
-	GTM_TIM0_CH0_CTRL.B.FLT_MODE_FE = 0b1;		/* Individual de-glitch mode */
-	GTM_TIM0_CH0_CTRL.B.FLT_CTR_RE  = 0b0;		/* Up/down counter */
-	GTM_TIM0_CH0_CTRL.B.FLT_CTR_FE  = 0b0;		/* Up/down counter */
+	GTM_CMU_CLK_EN.B.EN_CLK0        = 0b10;     /* Enable CMU_CLK0 = GCLK */
+	GTM_TIM0_CH0_CTRL.B.CLK_SEL     = 0b000;    /* Clock source for channel = CMU_CLK0 */
+	GTM_TIM0_CH0_CTRL.B.TIM_EN      = 0b1;      /* Enable TIM0_0 */
+	GTM_TIM0_CH0_CTRL.B.TIM_MODE    = 0b010;    /* TIM Input Event Mode (TIEM) */
+	GTM_TIM0_CH0_CTRL.B.ISL         = 0b1;      /* Ignore DSL and treat both edges as active edge */
+	GTM_TIM0_CH0_CTRL.B.FLT_EN      = 0b1;      /* Enable FLT */
+	GTM_TIM0_CH0_CTRL.B.FLT_CNT_FRQ = 0b00;     /* FLT_CNT counts with CMU_CLK0 = 50 MHz */
+	GTM_TIM0_CH0_CTRL.B.FLT_MODE_RE = 0b1;      /* Individual de-glitch mode */
+	GTM_TIM0_CH0_CTRL.B.FLT_MODE_FE = 0b1;      /* Individual de-glitch mode */
+	GTM_TIM0_CH0_CTRL.B.FLT_CTR_RE  = 0b0;      /* Up/down counter */
+	GTM_TIM0_CH0_CTRL.B.FLT_CTR_FE  = 0b0;      /* Up/down counter */
 
 	GTM_TIM0_CH0_FLT_RE.B.FLT_RE = DEGLITCH_TIME_ABSOLUTE;
 	GTM_TIM0_CH0_FLT_FE.B.FLT_FE = DEGLITCH_TIME_ABSOLUTE;
 
 	GTM_TIM0_CH0_IRQ_EN.B.NEWVAL_IRQ_EN = 0b1;
 
-	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRPN = ISR_PN_EDGE_CAPTURE; 	/* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRE  = 0b1;					/* Enable service request */
+	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRPN = ISR_PN_EDGE_CAPTURE;
+	MODULE_SRC.GTM.GTM[0].TIM[0][0].B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_EDGE_CAPTURE, (void (*) (int))ISR_edge_capture, 0);
 }
 

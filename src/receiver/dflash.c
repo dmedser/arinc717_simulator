@@ -4,10 +4,10 @@
 #include <IfxFlash.h>
 #include <IfxFlash_cfg.h>
 
-#define	DFLASH_PAGE_SIZE						sizeof(uint64_t)
-#define DFLASH_ADDRESS(START_ADDRESS, OFFSET)	(START_ADDRESS + (OFFSET * DFLASH_PAGE_SIZE))
-#define BITRATE_DFLASH_ADDRESS					DFLASH_ADDRESS(IFXFLASH_DFLASH_START, 0)
-#define SYNC_WORD_DFLASH_ADDRESS(NUMBER)		DFLASH_ADDRESS(IFXFLASH_DFLASH_START, NUMBER)
+#define DFLASH_PAGE_SIZE                        sizeof(uint64_t)
+#define DFLASH_ADDRESS(START_ADDRESS, OFFSET)   (START_ADDRESS + (OFFSET * DFLASH_PAGE_SIZE))
+#define BITRATE_DFLASH_ADDRESS                  DFLASH_ADDRESS(IFXFLASH_DFLASH_START, 0)
+#define SYNC_WORD_DFLASH_ADDRESS(NUMBER)        DFLASH_ADDRESS(IFXFLASH_DFLASH_START, NUMBER)
 
 /* Writes 64-bit word to an data flash absolute address (8-byte aligned) */
 static void dflash_wr_u64(uint32_t addr, uint64_t data) {

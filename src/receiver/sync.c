@@ -5,29 +5,29 @@
 #include "global_cfg.h"
 #include <Platform_Types.h>
 
-#define SW1_REVERSED				sync_words_reversed[0]
-#define SW2_REVERSED				sync_words_reversed[1]
-#define SW3_REVERSED				sync_words_reversed[2]
-#define SW4_REVERSED				sync_words_reversed[3]
+#define SW1_REVERSED                sync_words_reversed[0]
+#define SW2_REVERSED                sync_words_reversed[1]
+#define SW3_REVERSED                sync_words_reversed[2]
+#define SW4_REVERSED                sync_words_reversed[3]
 
-#define SW_MASK						0xFFF00000
+#define SW_MASK                     0xFFF00000
 
-#define SW1_CAPTURED				((bitstream.bits & SW_MASK) == SW1_REVERSED)
-#define SW2_CAPTURED				((bitstream.bits & SW_MASK) == SW2_REVERSED)
-#define SW3_CAPTURED				((bitstream.bits & SW_MASK) == SW3_REVERSED)
-#define SW4_CAPTURED				((bitstream.bits & SW_MASK) == SW4_REVERSED)
+#define SW1_CAPTURED                ((bitstream.bits & SW_MASK) == SW1_REVERSED)
+#define SW2_CAPTURED                ((bitstream.bits & SW_MASK) == SW2_REVERSED)
+#define SW3_CAPTURED                ((bitstream.bits & SW_MASK) == SW3_REVERSED)
+#define SW4_CAPTURED                ((bitstream.bits & SW_MASK) == SW4_REVERSED)
 
-#define ADJACENT_SWS_LOST			((bitstream.counter - last_adjacent_sws_stamp) > bitrate_bps)
+#define ADJACENT_SWS_LOST           ((bitstream.counter - last_adjacent_sws_stamp) > bitrate_bps)
 
-#define ADJACENT_SW12_CAPTURED		0
-#define ADJACENT_SW23_CAPTURED		1
-#define ADJACENT_SW34_CAPTURED		2
-#define ADJACENT_SW41_CAPTURED		3
+#define ADJACENT_SW12_CAPTURED      0
+#define ADJACENT_SW23_CAPTURED      1
+#define ADJACENT_SW34_CAPTURED      2
+#define ADJACENT_SW41_CAPTURED      3
 
-#define SUCCESS						TRUE
-#define FAIL						FALSE
+#define SUCCESS                     TRUE
+#define FAIL                        FALSE
 
-#define STAMPS_NUMBER				100
+#define STAMPS_NUMBER               100
 
 typedef struct sw_stamps_t {
 	uint32_t buf[STAMPS_NUMBER];

@@ -13,7 +13,7 @@
  */
 
 void bit_capture_timer_init(void) {
-	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;  /* Enable all FXCLK */
+	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
 	GTM_TOM0_TGC0_FUPD_CTRL.B.FUPD_CTRL0 = 0b10;
 	GTM_TOM0_TGC0_GLB_CTRL.B.UPEN_CTRL0  = 0b10;
@@ -23,11 +23,11 @@ void bit_capture_timer_init(void) {
 
 	GTM_TOM0_CH0_IRQ_EN.B.CCU0TC_IRQ_EN  = 0b1;
 
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_BIT_TX_TIMEOUT;  /* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE  = 0b1;					 /* Enable service request */
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_BIT_TX_TIMEOUT;
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_BIT_TX_TIMEOUT, (void (*) (int))ISR_bit_tx_timeout, 0);
 
-	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;  /* Apply the updates */
+	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
 

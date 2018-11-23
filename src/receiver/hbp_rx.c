@@ -14,15 +14,15 @@ static void bitstream_put_2_decoded_words_into(subframe_t *subframe);
 static boolean first_edge = TRUE;
 static uint32_t frame_bit_counter = 0;
 
-frame_t frame = {{{{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}}, 0,	0,
-					frame_is_empty,
-					frame_get_8_bytes_from};
+frame_t frame = {{{{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}, {{0}, 0, 0}}, 0, 0,
+                    frame_is_empty,
+                    frame_get_8_bytes_from};
 
 bitstream_t bitstream = {0, 0, bitstream_put_2_decoded_words_into};
 
 static boolean frame_is_empty(void) {
 	return (idx_of_subframe_to_rx == idx_of_subframe_to_tx) &&
-		   ((idx_of_word_to_rx - idx_of_word_to_tx) < NUMBER_OF_WORDS_IN_CAN_MSG);
+           ((idx_of_word_to_rx - idx_of_word_to_tx) < NUMBER_OF_WORDS_IN_CAN_MSG);
 }
 
 
@@ -37,9 +37,9 @@ static uint64_t frame_get_8_bytes_from(subframe_t *subframe) {
 
 
 static void bitstream_put_2_decoded_words_into(subframe_t *subframe) {
-	#define BITS_31_20(u32)	(u32 & 0xFFF00000)
-	#define BITS_19_8(u32)	(u32 & 0x000FFF00)
-	#define BIT_31(u32)		(u32 & 0x80000000)
+	#define BITS_31_20(u32) (u32 & 0xFFF00000)
+	#define BITS_19_8(u32)  (u32 & 0x000FFF00)
+	#define BIT_31(u32)     (u32 & 0x80000000)
 
 	uint32_t lw = BITS_31_20(bitstream.bits);
 	uint32_t rw = BITS_19_8(bitstream.bits) << 12;
@@ -102,9 +102,9 @@ void ISR_edge_capture(void) {
 
 			sync_flags_t sync_flags = sw_tracking();
 
-			#define ALL_SYNC_FLAGS_ARE_SET				((sync_flags & SYNC_FLAGS_MASK) == SYNC_FLAGS_MASK)
-			#define NEW_2_WORDS_IN_BIT_STREAM_READY		((frame_bit_counter % (BITS_IN_WORD * 2)) == 0)
-			#define SUBFRAME_RECEIVED 					(frame_bit_counter == (uint32_t)(bitrate_bps - 1))
+			#define ALL_SYNC_FLAGS_ARE_SET              ((sync_flags & SYNC_FLAGS_MASK) == SYNC_FLAGS_MASK)
+			#define NEW_2_WORDS_IN_BIT_STREAM_READY     ((frame_bit_counter % (BITS_IN_WORD * 2)) == 0)
+			#define SUBFRAME_RECEIVED                   (frame_bit_counter == (uint32_t)(bitrate_bps - 1))
 
 			if(ALL_SYNC_FLAGS_ARE_SET) {
 
