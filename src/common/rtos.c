@@ -47,7 +47,7 @@ static void rtos_base_init(void) {
 	MODULE_SRC.GPT12.GPT12[0].T6.B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_RTOS_100_US, (void (*) (int))ISR_rtos_100_us, 0);
 
-	MODULE_GPT120.T6CON.B.T6R = 0b1;	  /* Run timer */
+	MODULE_GPT120.T6CON.B.T6R = 0b1;      /* Run timer */
 }
 
 
