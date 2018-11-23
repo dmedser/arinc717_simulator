@@ -19,11 +19,13 @@
 #endif
 
 #define CAN_BAUDRATE_BPS        500000  /* 500 kBit/sec */
+#define CAN_RX_PIN              &IfxMultican_RXD0A_P02_1_IN
+#define CAN_TX_PIN              &IfxMultican_TXD0_P02_0_OUT
 
 #if(OP_MODE == TRANSMITTER)
-	#define CAN_DST_MO_MSG_ID   TRANSMITTER_CAN_ID
+    #define CAN_DST_MO_MSG_ID   TRANSMITTER_CAN_ID
 #else
-	#define CAN_DST_MO_MSG_ID   RECEIVER_CAN_ID
+    #define CAN_DST_MO_MSG_ID   RECEIVER_CAN_ID
 #endif
 
 /* CAN handle */
@@ -66,8 +68,8 @@ void can_init(void) {
 
 	can_node_cfg.baudrate   = CAN_BAUDRATE_BPS;
 	can_node_cfg.nodeId     = IfxMultican_NodeId_0;
-	can_node_cfg.rxPin      = &IfxMultican_RXD0A_P02_1_IN;
-	can_node_cfg.txPin      = &IfxMultican_TXD0_P02_0_OUT;
+	can_node_cfg.rxPin      = CAN_RX_PIN;
+	can_node_cfg.txPin      = CAN_TX_PIN;
 	can_node_cfg.rxPinMode  = IfxPort_InputMode_pullUp;
 	can_node_cfg.txPinMode  = IfxPort_OutputMode_pushPull;
 

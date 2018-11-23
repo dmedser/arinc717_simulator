@@ -7,8 +7,8 @@
 #include <IfxSrc_reg.h>
 #include <machine/cint.h>
 
-#define DEGLITCH_TIME_PERCENT	10
-#define	DEGLITCH_TIME_ABSOLUTE	((bit_tx_period / 100) * DEGLITCH_TIME_PERCENT)
+#define DEGLITCH_TIME_PERCENT   10
+#define	DEGLITCH_TIME_ABSOLUTE  ((bit_tx_period / 100) * DEGLITCH_TIME_PERCENT)
 
 /* Таймер захвата фронтов генерирует  NEWVAL  прерывание на каждый
  * фронт  (положительный  и  отрицательный) входящего  HBP сигнала,

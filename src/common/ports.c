@@ -4,7 +4,7 @@
 #include "global_cfg.h"
 
 void ports_init(void) {
-	#if(OP_MODE	== TRANSMITTER)
+	#if(OP_MODE == TRANSMITTER)
 
 	/* HBP_TX  */
 	const IfxPort_Io_ConfigPin HBP_OUT_cfg_pin[1] = {{&IfxPort_P15_0, IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1}};

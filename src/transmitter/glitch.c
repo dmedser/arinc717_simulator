@@ -9,11 +9,11 @@
 #include <stdint.h>
 #include <machine/cint.h>
 
-#define GLITCH_RESOLUTION		100
-#define GLITCH_TIME_UNIT		(bit_tx_period / GLITCH_RESOLUTION)
-#define GLITCH_DURATION			(GLITCH_TIME_UNIT * 1)
-#define GLITCH_START_MIN		GLITCH_DURATION
-#define GLITCH_START_MAX		(bit_tx_period - (2 * GLITCH_DURATION))
+#define GLITCH_RESOLUTION       100
+#define GLITCH_TIME_UNIT        (bit_tx_period / GLITCH_RESOLUTION)
+#define GLITCH_DURATION         (GLITCH_TIME_UNIT * 1)
+#define GLITCH_START_MIN        GLITCH_DURATION
+#define GLITCH_START_MAX        (bit_tx_period - (2 * GLITCH_DURATION))
 
 static uint16_t range_rand(uint16_t range) {
 	return abs(rand() % (range + 1));
@@ -23,7 +23,7 @@ static uint16_t range_rand(uint16_t range) {
 inline void gt_update(void) {
 	uint16_t raw_rand = range_rand(bit_tx_period);
 	uint16_t tuned_rand = (raw_rand < GLITCH_START_MIN) ? GLITCH_START_MIN :
-						  ((raw_rand > GLITCH_START_MAX) ? GLITCH_START_MAX : raw_rand);
+	                     ((raw_rand > GLITCH_START_MAX) ? GLITCH_START_MAX : raw_rand);
 
 	if(tuned_rand <= (bit_tx_period / 2)) {
 		if(tuned_rand > ((bit_tx_period / 2) - (2 * GLITCH_DURATION))) {
@@ -42,7 +42,7 @@ inline void gt_update(void) {
 
 
 void glitch_timer_init(void) {
-	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;	/* Enable FXCLK */
+	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
 	GTM_TOM0_TGC0_FUPD_CTRL.B.FUPD_CTRL1 = 0b10;
 	GTM_TOM0_TGC0_GLB_CTRL.B.UPEN_CTRL1  = 0b10;
@@ -55,11 +55,11 @@ void glitch_timer_init(void) {
 	GTM_TOM0_CH1_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
 	GTM_TOM0_CH1_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_GLITCH;	/* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE  = 0b1;	        /* Enable service request */
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRPN = ISR_PN_GLITCH;
+	MODULE_SRC.GTM.GTM[0].TOM[0][0].B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_GLITCH, (void (*) (int))ISR_glitch, 0);
 
-	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;	/* Apply the updates */
+	GTM_TOM0_TGC0_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
 

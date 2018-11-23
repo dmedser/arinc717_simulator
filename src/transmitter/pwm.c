@@ -14,7 +14,7 @@
  */
 
 void pwm_timer_init(void) {
-	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;  /* Enable FXCLK */
+	GTM_CMU_CLK_EN.B.EN_FXCLK = 0b10;
 
 	GTM_TOM0_TGC1_FUPD_CTRL.B.FUPD_CTRL4 = 0b10;
 	GTM_TOM0_TGC1_GLB_CTRL.B.UPEN_CTRL4  = 0b10;
@@ -27,11 +27,11 @@ void pwm_timer_init(void) {
 	GTM_TOM0_CH12_IRQ_EN.B.CCU0TC_IRQ_EN = 0b1;
 	GTM_TOM0_CH12_IRQ_EN.B.CCU1TC_IRQ_EN = 0b1;
 
-	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_BIT_TX_PWM;  /* Service request priority number */
-	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE  = 0b1;				 /* Enable service request */
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRPN = ISR_PN_BIT_TX_PWM;
+	MODULE_SRC.GTM.GTM[0].TOM[0][6].B.SRE  = 0b1;
 	_install_int_handler(ISR_PN_BIT_TX_PWM, (void (*) (int))ISR_bit_tx, 0);
 
-	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;  /* Apply the updates */
+	GTM_TOM0_TGC1_GLB_CTRL.B.HOST_TRIG = 0b1;
 }
 
 

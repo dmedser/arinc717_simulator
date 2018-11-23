@@ -9,9 +9,9 @@
 #include <IfxCpu.h>
 
 #define RSH_MAX             11
-#define WORD_IS_PASSED		(txd.rsh == RSH_MAX)
-#define IT_WAS_LAST_WORD	(txd.num == 0)
-#define BIT_TO_PASS			((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
+#define WORD_IS_PASSED      (txd.rsh == RSH_MAX)
+#define IT_WAS_LAST_WORD    (txd.num == 0)
+#define BIT_TO_PASS         ((txd.buf[txd.idx] >> txd.rsh) & 0x0001)
 
 typedef struct txd_t {
 	uint16_t buf[SUBFRAME_LEN_MAX];
