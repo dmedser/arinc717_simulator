@@ -126,8 +126,8 @@ void can_init(void) {
 static uint32_t swap_endianness(uint32_t value) {
 	return ((value & ((uint32_t)0xFF << 0))  << 24) |
 	       ((value & ((uint32_t)0xFF << 8))  << 8)  |
-           ((value & ((uint32_t)0xFF << 16)) >> 8)  |
-           ((value & ((uint32_t)0xFF << 24)) >> 24);
+	       ((value & ((uint32_t)0xFF << 16)) >> 8)  |
+	       ((value & ((uint32_t)0xFF << 24)) >> 24);
 }
 
 
@@ -273,8 +273,8 @@ void ISR_can_tx(void) {
 
 		uint64_t can_tx_msg_id_splitted = (uint64_t)(can_tx_msg_id & (0xF << 0))  << (12 - 0) |
 		                                  (uint64_t)(can_tx_msg_id & (0xF << 4))  << (28 - 4) |
-	                                      (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
-	                                      (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
+		                                  (uint64_t)(can_tx_msg_id & (0xF << 8))  << (44 - 8) |
+		                                  (uint64_t)(can_tx_msg_id & (0xF << 12)) << (60 - 12);
 
 		can_tx_msg_data |= can_tx_msg_id_splitted;
 
