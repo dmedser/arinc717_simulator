@@ -80,7 +80,7 @@ void ISR_edge_capture(void) {
 	IfxCpu_forceDisableInterrupts();
 
 	/* Flag must be cleared manually */
-	GTM_TIM0_CH0_IRQ_NOTIFY.B.NEWVAL = 0b1;
+	GTM_TIM0_CH4_IRQ_NOTIFY.B.NEWVAL = 0b1;
 
 	if(first_edge) {
 		bct_on();

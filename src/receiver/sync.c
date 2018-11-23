@@ -5,6 +5,9 @@
 #include "global_cfg.h"
 #include <Platform_Types.h>
 
+/* Описание работы конечного автомата синхронизации с потоком
+ * бит представлено в документации */
+
 #define SW1_REVERSED                sync_words_reversed[0]
 #define SW2_REVERSED                sync_words_reversed[1]
 #define SW3_REVERSED                sync_words_reversed[2]

@@ -11,7 +11,7 @@ void ports_init(void) {
 
 	const IfxPort_Io_Config hbp_out_cfg = {
 		sizeof(hbp_out_cfg_pin) / sizeof(IfxPort_Io_ConfigPin),
-		(IfxPort_Io_ConfigPin *)hbp_out_cfg
+		(IfxPort_Io_ConfigPin *)hbp_out_cfg_pin
 	};
 
 	IfxPort_Io_initModule(&hbp_out_cfg);

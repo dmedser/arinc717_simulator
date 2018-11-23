@@ -11,11 +11,11 @@
 #define SET_PIN_LOW(x)    IfxPort_setPinLow(x)
 #define TOGGLE_PIN(x)     IfxPort_togglePin(x)
 
-#define HBP_OUT           &MODULE_P15, 0
-#define HBP_OUT_CFG       &IfxPort_P15_0
+#define HBP_OUT           &MODULE_P13, 0
+#define HBP_OUT_CFG       &IfxPort_P13_0
 
-#define HBP_IN            &MODULE_P33, 10
-#define HBP_IN_CFG        &IfxGtm_TIM0_0_TIN32_P33_10_IN
+#define HBP_IN            &MODULE_P33, 0
+#define HBP_IN_CFG        &IfxGtm_TIM0_4_TIN22_P33_0_IN
 
 void ports_init(void);
 
